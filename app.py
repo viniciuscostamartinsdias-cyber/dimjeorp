@@ -13,7 +13,7 @@ API_KEY = "4cd900e44cb240f7b7ef7f2c2b95b423"
 # ==========================================
 
 st.title("🏆 Scanner Tipster Pro: Inteligência Quantitativa Oficial")
-st.markdown("Plataforma com **Motor Superbet Oficial**, Elencos Atualizados, Dicas de Linhas Progressivas e **Planilha de Bingo (Placar Exato)**.")
+st.markdown("Plataforma com **Motor Superbet Oficial**, Elencos Atualizados, Dicas Progressivas e **Planilha de Bingo com Mapa de Calor (Poisson)**.")
 
 # --- 0. MOTOR MATEMÁTICO SUPERBET ---
 def calcular_probabilidade_real(media_base, linha=0.5):
@@ -607,7 +607,7 @@ with aba_personalizada:
                     renderizar_confianca(prob_final_calculada)
 
 with aba_bingo:
-    st.markdown("### 🔢 Calculadora de Placar Exato (Poisson)")
+    st.markdown("### 🔢 Calculadora Automática de Placar Exato (Mapa de Calor)")
     if not df_jogos.empty:
         opcoes_bingo = [f"{row['Mandante']} x {row['Visitante']} ({row['Liga Categoria']})" for _, row in df_jogos.iterrows()]
         jogo_bingo = st.selectbox("Selecione o Jogo para Calcular o Bingo:", opcoes_bingo, key="bingo_jogo")
@@ -616,21 +616,26 @@ with aba_bingo:
             m_nome_bingo = jogo_bingo.split(" x ")[0]
             v_nome_bingo = jogo_bingo.split(" x ")[1].split(" (")[0]
             
-            c_m, c_v = st.columns(2)
-            with c_m:
-                xg_m = st.slider(f"Expectativa de Gols (xG) - {m_nome_bingo}:", 0.1, 4.0, 1.5, 0.1)
-            with c_v:
-                xg_v = st.slider(f"Expectativa de Gols (xG) - {v_nome_bingo}:", 0.1, 4.0, 1.1, 0.1)
+            elenco_m = obter_elenco_api_real(m_nome_bingo, API_KEY)
+            elenco_v = obter_elenco_api_real(v_nome_bingo, API_KEY)
             
-            # Matriz Poisson
+            xg_m_base = sum(p.get("media_gols", 0) for p in elenco_m) if elenco_m else 1.2
+            xg_v_base = sum(p.get("media_gols", 0) for p in elenco_v) if elenco_v else 1.0
+            
+            xg_m = min(max(xg_m_base * 1.15, 0.5), 3.5)
+            xg_v = min(max(xg_v_base, 0.5), 3.5)
+            
+            st.info(f"📊 **Expectativa de Gols Calculada (xG):** {m_nome_bingo} (**{xg_m:.2f}**) vs {v_nome_bingo} (**{xg_v:.2f}**)")
+            
             probs = []
-            max_gols = 5
+            max_gols = 6
             for i in range(max_gols):
                 linha = []
                 for j in range(max_gols):
                     p_m = (math.pow(xg_m, i) * math.exp(-xg_m)) / math.factorial(i)
                     p_v = (math.pow(xg_v, j) * math.exp(-xg_v)) / math.factorial(j)
-                    linha.append(p_m * p_v * 100)
+                    prob_total = p_m * p_v * 100
+                    linha.append(prob_total)
                 probs.append(linha)
             
             df_bingo = pd.DataFrame(probs, 
@@ -638,9 +643,9 @@ with aba_bingo:
                                     index=[f"{i} Gols ({m_nome_bingo[:3]})" for i in range(max_gols)])
             
             st.write("📈 **Mapa de Calor de Probabilidade (%)**")
+            
             st.dataframe(df_bingo.style.background_gradient(cmap='YlGn', axis=None).format("{:.1f}%"), use_container_width=True)
             
-            # Encontra o placar mais provável
             max_prob = 0
             melhor_placar = ""
             for i in range(max_gols):
