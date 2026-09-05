@@ -1,3 +1,13 @@
+
+Conversa com o Gemini
+Quero q pegue todos os mercados na superbet e adicione tem como?
+
+Para incorporar absolutamente todos os mercados tradicionais e especiais que a Superbet oferece (incluindo mais linhas de Handicaps Asiáticos/Europeus, Gols Exatos, Ambas Marcam em tempos específicos, Super Placar, Intervalo/Final do Jogo (HT/FT), Escanteios por faixa, Cartões exatos e a prateleira completa de Props de Jogadores para chutes, passes e faltas), a melhor abordagem é expandir o catálogo-base do sistema para um dicionário abrangente de mercados reais.
+
+Com essa atualização, o scanner terá centenas de combinações dinâmicas possíveis, cobrindo o leque inteiro da Superbet para que você possa gerar apostas simples, criar apostas automáticas e montar múltiplas personalizadas de alta precisão.
+
+Substitua todo o conteúdo do seu app.py por este código completo e atualizado:
+
 Python
 import streamlit as st
 import pandas as pd
