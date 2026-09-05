@@ -5,15 +5,15 @@ from datetime import datetime, timedelta
 import random
 
 # Configuração da Página
-st.set_page_config(page_title="Scanner Tipster Pro - Completo", layout="wide")
+st.set_page_config(page_title="Scanner Tipster Pro - Oficial", layout="wide")
 
 # ==========================================
 # 🔑 COLE A SUA CHAVE DA API AQUI DENTRO DAS ASPAS
 API_KEY = "4cd900e44cb240f7b7ef7f2c2b95b423"
 # ==========================================
 
-st.title("🏆 Scanner Tipster Pro: Central Completa de Jogos e Árbitros")
-st.markdown("Todas as ligas mundiais e inglesas disponíveis, estatísticas de titulares, perfil disciplinar de árbitros e comparador Betano vs Superbet.")
+st.title("🏆 Scanner Tipster Pro: Central Oficial de Ligas e Partidas")
+st.markdown("Premier League da Inglaterra, Brasileirão Série A, estatísticas de titulares, árbitros e comparador Betano vs Superbet.")
 
 # --- 1. BANCO DE JOGADORES ---
 def obter_jogadores(time):
@@ -63,10 +63,10 @@ def obter_arbitro(liga):
         "Penaltis_Por_Jogo": round(random.uniform(0.25, 0.55), 2)
     }
 
-# --- 3. BUSCA GLOBAL DE TODAS AS LIGAS (SEM RESTRIÇÃO) ---
+# --- 3. BUSCA INTELIGENTE DE JOGOS (COM IDS OFICIAIS BLINDADOS) ---
 @st.cache_data(ttl=7200)
-def carregar_todas_as_ligas(api_key, data_base):
-    # Janela de 3 dias para garantir a rodada completa de fim de semana
+def carregar_rodada_oficial_blinda(api_key, data_base):
+    # Janela de 3 dias para pegar a rodada inteira de fim de semana
     datas_para_buscar = [
         data_base.strftime("%Y-%m-%d"),
         (data_base + timedelta(days=1)).strftime("%Y-%m-%d"),
@@ -76,6 +76,18 @@ def carregar_todas_as_ligas(api_key, data_base):
     headers = {'x-apisports-key': api_key}
     todos_os_jogos = []
     
+    # IDs oficiais rigorosos da API-Football para evitar ligas falsas (Ex: Premier League da Inglaterra = 39, Brasileirão = 71)
+    ligas_permitidas = {
+        39: "Premier League (Inglaterra)",
+        71: "Campeonato Brasileiro Série A",
+        140: "La Liga (Espanha)",
+        135: "Serie A (Itália)",
+        78: "Bundesliga (Alemanha)",
+        61: "Ligue 1 (França)",
+        2: "UEFA Champions League",
+        13: "Copa Libertadores"
+    }
+    
     for data in datas_para_buscar:
         url = f"https://v3.football.api-sports.io/fixtures?date={data}&timezone=America/Sao_Paulo"
         try:
@@ -83,15 +95,18 @@ def carregar_todas_as_ligas(api_key, data_base):
             dados = response.json()
             if 'response' in dados:
                 for item in dados['response']:
-                    # Captura absolutamente todas as partidas e ligas disponíveis na API
-                    todos_os_jogos.append({
-                        "Liga": item['league']['name'],
-                        "País": item['league']['country'],
-                        "Data": data,
-                        "Horário": item['fixture']['date'][11:16],
-                        "Mandante": item['teams']['home']['name'],
-                        "Visitante": item['teams']['away']['name']
-                    })
+                    league_id = item['league']['id']
+                    # Se estiver na nossa lista de IDs oficiais, adicionamos com o nome padronizado
+                    if league_id in ligas_permitidas:
+                        todos_os_jogos.append({
+                            "Liga ID": league_id,
+                            "Liga": ligas_permitidas[league_id],
+                            "País": item['league']['country'],
+                            "Data": data,
+                            "Horário": item['fixture']['date'][11:16],
+                            "Mandante": item['teams']['home']['name'],
+                            "Visitante": item['teams']['away']['name']
+                        })
         except Exception:
             pass
             
@@ -112,29 +127,35 @@ if API_KEY == "COLE_SUA_CHAVE_AQUI":
     st.error("⚠️ Atenção: Cole sua chave da API na linha 14 do código.")
     df_jogos = pd.DataFrame()
 else:
-    df_jogos = carregar_todas_as_ligas(API_KEY, data_inicial)
+    df_jogos = carregar_rodada_oficial_blinda(API_KEY, data_inicial)
 
 # ==========================================
 # ABA 1: LIGAS, JOGOS E PAINEL DETALHADO POR PARTIDA
 # ==========================================
 with aba_principal:
-    st.markdown(f"### 🏆 Todas as Ligas e Campeonatos do Mundo")
+    st.markdown(f"### 🏆 Ligas Oficiais Principais (Rodada Completa)")
     
     if not df_jogos.empty:
-        # Prioriza as principais ligas no topo, mas mantém todas as outras acessíveis abaixo
-        prioridade_ligas = [
-            "Premier League", "Campeonato Brasileiro Série A", "La Liga", 
-            "Serie A", "Bundesliga", "Ligue 1", "UEFA Champions League", "Copa Libertadores"
+        # Ordem fixa para garantir que a Premier League e o Brasileirão fiquem absolutamente no topo
+        ordem_exibicao = [
+            "Premier League (Inglaterra)", 
+            "Campeonato Brasileiro Série A", 
+            "La Liga (Espanha)", 
+            "Serie A (Itália)", 
+            "Bundesliga (Alemanha)", 
+            "Ligue 1 (França)", 
+            "UEFA Champions League", 
+            "Copa Libertadores"
         ]
         
         todas_ligas = sorted(df_jogos['Liga'].unique())
-        ligas_ordenadas = [l for l in prioridade_ligas if l in todas_ligas] + [l for l in todas_ligas if l not in prioridade_ligas]
+        ligas_ordenadas = [l for l in ordem_exibicao if l in todas_ligas] + [l for l in todas_ligas if l not in ordem_exibicao]
         
         for liga in ligas_ordenadas:
             jogos_da_liga = df_jogos[df_jogos['Liga'] == liga]
             pais_liga = jogos_da_liga.iloc[0]['País']
             
-            with st.expander(f"🏆 {liga} ({pais_liga}) — {len(jogos_da_liga)} jogo(s)"):
+            with st.expander(f"🏆 {liga} — {len(jogos_da_liga)} jogo(s)"):
                 for index, row in jogos_da_liga.iterrows():
                     st.markdown(f"⚽ **{row['Data']} às {row['Horário']}** | **{row['Mandante']}** x **{row['Visitante']}**")
                     
@@ -142,7 +163,7 @@ with aba_principal:
                     odd_s_v = round(odd_b_v + random.uniform(-0.06, 0.10), 2)
                     melhor_casa_v = "Superbet 🏆" if odd_s_v > odd_b_v else "Betano 🏆"
                     
-                    arbitro = obter_arbitro(row['Liga'])
+                    arbitro = obter_arbitro(liga)
                     jc = obter_jogadores(row['Mandante'])
                     jf = obter_jogadores(row['Visitante'])
                     
@@ -200,11 +221,11 @@ with aba_cacador:
     st.markdown("### 🎯 Caçador de Odds (Betano vs Superbet)")
     
     if not df_jogos.empty:
-        liga_selecionada = st.selectbox("1️⃣ Selecione a Liga:", sorted(df_jogos['Liga'].unique()), key="cacador_liga_global")
+        liga_selecionada = st.selectbox("1️⃣ Selecione a Liga:", sorted(df_jogos['Liga'].unique()), key="cacador_liga_oficial_b")
         jogos_da_liga_sel = df_jogos[df_jogos['Liga'] == liga_selecionada]
         
         opcoes_jogos = [f"{row['Data']} - {row['Horário']} | {row['Mandante']} x {row['Visitante']}" for _, row in jogos_da_liga_sel.iterrows()]
-        jogo_escolhido_str = st.selectbox("2️⃣ Selecione a Partida:", opcoes_jogos, key="cacador_jogo_global")
+        jogo_escolhido_str = st.selectbox("2️⃣ Selecione a Partida:", opcoes_jogos, key="cacador_jogo_oficial_b")
         
         if jogo_escolhido_str:
             partes = jogo_escolhido_str.split(" | ")[1].split(" x ")
@@ -239,7 +260,7 @@ with aba_multiplas:
     
     if not df_jogos.empty:
         lista_confrontos = [f"{row['Liga']} | {row['Mandante']} x {row['Visitante']} ({row['Data']} - {row['Horário']})" for _, row in df_jogos.iterrows()]
-        jogos_escolhidos_multipla = st.multiselect("Selecione as partidas para a sua Múltipla:", lista_confrontos, key="mult_global")
+        jogos_escolhidos_multipla = st.multiselect("Selecione as partidas para a sua Múltipla:", lista_confrontos, key="mult_oficial_b")
         
         if jogos_escolhidos_multipla:
             st.divider()
