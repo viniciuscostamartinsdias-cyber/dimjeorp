@@ -13,7 +13,7 @@ API_KEY = "4cd900e44cb240f7b7ef7f2c2b95b423"
 # ==========================================
 
 st.title("🏆 Scanner Tipster Pro: Inteligência Quantitativa Oficial")
-st.markdown("Plataforma com **Motor Superbet Oficial**, Elencos Atualizados, Controle de Odds Alvo Estrito e Planilha de Bingo por Poisson.")
+st.markdown("Plataforma com **Motor Superbet Oficial**, Elencos Atualizados, Controle de Odds Alvo e Planilha de Bingo por Poisson.")
 
 # --- 0. MOTOR MATEMÁTICO SUPERBET ---
 def calcular_probabilidade_real(media_base, linha=0.5):
@@ -270,7 +270,7 @@ with aba_dossie:
                                 st.success(f"💡 **Dica:** 0.5+ Chutes ao Gol ({prob}%)")
 
 with aba_auto:
-    st.markdown("### 🎯 Criador Automático de Apostas (Máx. 3-4 Seleções)")
+    st.markdown("### 🎯 Criador Automático de Apostas")
     if not df_jogos.empty:
         opcoes = [f"{row['Mandante']} x {row['Visitante']} ({row['Liga Categoria']})" for _, row in df_jogos.iterrows()]
         jogo_sel = st.selectbox("Selecione a Partida:", opcoes, key="auto_jogo")
@@ -286,7 +286,7 @@ with aba_auto:
                     catalogo.extend(obter_opcoes_por_categoria(m, v, cat_m, API_KEY))
                 
                 if not catalogo:
-                    st.warning("Mercados insuficientes para esta partida.")
+                    st.warning("Mercados insuficientes.")
                 else:
                     bilhetes_gerados = []
                     tentativas = 0
@@ -295,8 +295,7 @@ with aba_auto:
                         b_atual, odds_s, cats_u, probs_s = [], [], set(), []
                         for item in catalogo:
                             if item["cat_base"] in cats_u: continue
-                            if len(b_atual) >= 3: break # Máximo 3 a 4 itens por bilhete
-                            
+                            if len(b_atual) >= 3: break
                             odd_fut = calcular_odd_bilhete(odds_s + [item["odd"]], "Criar Aposta")
                             if odd_fut <= (alvo_auto * 1.15) or len(b_atual) == 0:
                                 b_atual.append(item)
@@ -315,7 +314,7 @@ with aba_auto:
                         tentativas += 1
                     
                     if bilhetes_gerados:
-                        st.success(f"🔥 {len(bilhetes_gerados)} variações geradas com sucesso!")
+                        st.success(f"🔥 {len(bilhetes_gerados)} variações geradas!")
                         c1, c2 = st.columns(2)
                         cols = [c1, c2, c1, c2]
                         for idx, bilhete in enumerate(bilhetes_gerados[:4]):
@@ -327,7 +326,7 @@ with aba_auto:
                                 st.metric("Odd Superbet 🟥", f"{bilhete['odd']}")
                                 renderizar_confianca(bilhete['prob'])
                     else:
-                        st.warning("Tente ajustar ligeiramente a Odd Alvo no controle deslizante.")
+                        st.warning("Tente ajustar a Odd Alvo.")
     else:
         st.info("Nenhuma partida carregada.")
 
@@ -348,7 +347,7 @@ with aba_elite:
                     detalhes.append(f"⚽ **{r['Mandante']} x {r['Visitante']}**\n• `{sel['nome']}` (Odd: {sel['odd']})")
             
             odd_tot = calcular_odd_bilhete(odds_s, "Criar Aposta")
-            st.success("🔥 Múltipla de Elite Gerada com Sucesso!")
+            st.success("🔥 Múltipla de Elite Gerada!")
             for d in detalhes:
                 with st.container(border=True):
                     st.markdown(d)
@@ -391,15 +390,21 @@ with aba_personalizada:
                 if m_f_com: mercados_ativos.append("Faltas Cometidas")
                 
                 odds_selecoes, probs_lista, detalhes_por_jogo = [], [], {jg: [] for jg in jogos_escolhidos}
+                
+                # Garante que CADA jogo selecionado receba exatamente 1 ou 2 mercados para aparecer no bilhete
                 for jg in jogos_escolhidos:
                     m_n, v_n = jg.split(" | ")[1].split(" x ")
-                    for cat_m in mercados_ativos:
+                    mercados_disponiveis_jogo = [cat for cat in mercados_ativos]
+                    random.shuffle(mercados_disponiveis_jogo)
+                    
+                    for cat_m in mercados_disponiveis_jogo[:2]: # Pega até 2 mercados por jogo
                         opcoes_cat = obter_opcoes_por_categoria(m_n, v_n, cat_m, API_KEY)
-                        if opcoes_cat and len(odds_selecoes) < 4:
+                        if opcoes_cat:
                             escolha = random.choice(opcoes_cat)
                             odds_selecoes.append(escolha["odd"])
                             probs_lista.append(escolha["prob"])
                             detalhes_por_jogo[jg].append(f"• `{escolha['nome']}` (Odd: `{escolha['odd']}`)")
+                            break # Uma seleção por jogo garante que todos apareçam
                 
                 odd_atual = calcular_odd_bilhete(odds_selecoes, "Criar Aposta")
                 prob_final = int(sum(probs_lista) / len(probs_lista)) if probs_lista else 75
@@ -433,7 +438,7 @@ with aba_bingo:
             elenco_m = obter_elenco_api_real(m_nome_bingo, API_KEY)
             elenco_v = obter_elenco_api_real(v_nome_bingo, API_KEY)
             
-            elite_times = ["manchester city", "real madrid", "bayern", "barcelona", "arsenal", "liverpool", "flamengo", "palmeiras", "são paulo", "inter", "napoli"]
+            elite_times = ["manchester city", "real madrid", "bayern", "barcelona", "arsenal", "liverpool", "flamengo", "palmeiras", "são paulo", "inter", "napoli", "schalke 04"]
             is_m_elite = any(t in m_nome_bingo.lower() for t in elite_times)
             is_v_elite = any(t in v_nome_bingo.lower() for t in elite_times)
             
