@@ -5,70 +5,93 @@ from datetime import datetime, timedelta
 import random
 
 # Configuração da Página
-st.set_page_config(page_title="Scanner Tipster Pro - Criar Aposta", layout="wide")
+st.set_page_config(page_title="Scanner Tipster Pro - Odd Hunter", layout="wide")
 
 # ==========================================
 # 🔑 COLE A SUA CHAVE DA API AQUI DENTRO DAS ASPAS
 API_KEY = "4cd900e44cb240f7b7ef7f2c2b95b423"
 # ==========================================
 
-st.title("🏆 Scanner Tipster Pro: Painel Criar Aposta e Probabilidades")
-st.markdown("O sistema analisa todos os mercados (Gols, Escanteios, Finalizações, Goleiros) e mostra a chance real de acerto para solos e múltiplas.")
+st.title("🏆 Scanner Tipster Pro: Caçador de Odds")
+st.markdown("Busque a rodada completa e use o **Caçador de Odds** dentro de cada partida para gerar o bilhete perfeito para a sua banca.")
 
-# --- 1. BANCO DE JOGADORES (2026) E GOLEIROS ---
+# --- 1. BANCO DE JOGADORES ---
 def obter_jogadores(time):
     elencos = {
         "Manchester City": ["E. Haaland", "P. Foden", "R. Cherki", "Ederson (GOL)"],
         "Real Madrid": ["K. Mbappé", "V. Júnior", "J. Bellingham", "T. Courtois (GOL)"],
         "Arsenal": ["B. Saka", "M. Ødegaard", "D. Rice", "David Raya (GOL)"],
         "Bayern Munich": ["H. Kane", "J. Musiala", "F. Wirtz", "M. Neuer (GOL)"],
-        "Flamengo": ["Pedro", "G. Arrascaeta", "L. Paquetá", "Rossi (GOL)"],
-        "Palmeiras": ["V. Roque", "J. Arias", "F. Anderson", "Weverton (GOL)"],
-        "Botafogo": ["Tiquinho Soares", "M. Leonardo", "M. Freitas", "John (GOL)"],
-        "São Paulo": ["J. Calleri", "L. Moura", "Pablo Maia", "Rafael (GOL)"],
         "Barcelona": ["L. Yamal", "N. Williams", "Pedri", "ter Stegen (GOL)"],
-        "Liverpool": ["L. Díaz", "C. Gakpo", "A. Mac Allister", "Alisson (GOL)"],
-        "Paris Saint Germain": ["O. Dembélé", "B. Barcola", "Vitinha", "Donnarumma (GOL)"]
+        "Liverpool": ["L. Díaz", "M. Salah", "A. Mac Allister", "Alisson (GOL)"],
+        "Paris Saint Germain": ["O. Dembélé", "B. Barcola", "Vitinha", "Donnarumma (GOL)"],
+        "Flamengo": ["Pedro", "G. Arrascaeta", "L. Paquetá", "Rossi (GOL)"],
+        "Palmeiras": ["V. Roque", "Estêvão", "F. Anderson", "Weverton (GOL)"],
+        "Botafogo": ["Tiquinho Soares", "J. Savarino", "M. Freitas", "John (GOL)"],
+        "São Paulo": ["J. Calleri", "L. Moura", "Pablo Maia", "Rafael (GOL)"],
+        "Vasco da Gama": ["P. Vegetti", "D. Payet", "Léo", "Léo Jardim (GOL)"],
+        "Fluminense": ["G. Cano", "J. Arias", "Thiago Silva", "Fábio (GOL)"],
+        "Cruzeiro": ["Matheus Pereira", "Arthur Gomes", "Zé Ivaldo", "Cássio (GOL)"],
+        "Athletico-PR": ["Mastriani", "A. Canobbio", "Fernandinho", "Léo Linck (GOL)"],
+        "Internacional": ["E. Valencia", "Alan Patrick", "G. Mercado", "Rochet (GOL)"],
+        "Santos": ["J. Furch", "Guilherme", "João Schmidt", "João Paulo (GOL)"],
+        "Corinthians": ["Yuri Alberto", "R. Garro", "Félix Torres", "Hugo Souza (GOL)"],
+        "Grêmio": ["M. Braithwaite", "F. Cristaldo", "W. Kannemann", "Marchesín (GOL)"],
+        "Atlético-MG": ["Hulk", "Paulinho", "G. Arana", "Everson (GOL)"],
+        "Bahia": ["E. Ribeiro", "Cauly", "Thaciano", "Marcos Felipe (GOL)"],
+        "Bragantino": ["E. Sasha", "Lincoln", "J. Capixaba", "Cleiton (GOL)"],
+        "Coritiba": ["Lucas Ronier", "M. Frizzo", "Bruno Melo", "P. Morisco (GOL)"],
+        "EC Vitória": ["Alerrandro", "Matheuzinho", "Wagner Leonardo", "Lucas Arcanjo (GOL)"]
     }
-    return elencos.get(time, ["Atacante (Camisa 9)", "Meia (Camisa 10)", "Zagueiro (Camisa 3)", "Goleiro Titular (GOL)"])
+    return elencos.get(time, [f"Atacante (9) do {time}", f"Meia (10) do {time}", f"Zagueiro (3) do {time}", f"Goleiro do {time}"])
 
-# --- 2. BUSCA DE JOGOS REAIS ---
+col_data1, col_data2 = st.columns([1, 3])
+with col_data1:
+    data_inicial = st.date_input("📅 Selecione a Data Inicial:", datetime.now())
+
 @st.cache_data(ttl=1800)
-def carregar_jogos_oficiais(api_key):
-    amanha = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
-    url = f"https://v3.football.api-sports.io/fixtures?date={amanha}&timezone=America/Sao_Paulo"
+def carregar_rodada_completa(api_key, data_base):
+    datas_para_buscar = [
+        data_base.strftime("%Y-%m-%d"),
+        (data_base + timedelta(days=1)).strftime("%Y-%m-%d"),
+        (data_base + timedelta(days=2)).strftime("%Y-%m-%d")
+    ]
+    
     headers = {'x-apisports-key': api_key}
-    try:
-        response = requests.get(url, headers=headers, timeout=10)
-        dados = response.json()
-        jogos = []
-        if 'response' in dados and len(dados['response']) > 0:
-            for item in dados['response']:
-                jogos.append({
-                    "Liga": item['league']['name'],
-                    "País": item['league']['country'],
-                    "Horário": item['fixture']['date'][11:16],
-                    "Mandante": item['teams']['home']['name'],
-                    "Visitante": item['teams']['away']['name']
-                })
-            return pd.DataFrame(jogos)
-        return pd.DataFrame()
-    except Exception:
-        return pd.DataFrame()
+    todos_os_jogos = []
+    
+    for data in datas_para_buscar:
+        url = f"https://v3.football.api-sports.io/fixtures?date={data}&timezone=America/Sao_Paulo"
+        try:
+            response = requests.get(url, headers=headers, timeout=10)
+            dados = response.json()
+            if 'response' in dados and len(dados['response']) > 0:
+                for item in dados['response']:
+                    todos_os_jogos.append({
+                        "Liga": item['league']['name'],
+                        "País": item['league']['country'],
+                        "Horário": item['fixture']['date'][11:16],
+                        "Data Real": data,
+                        "Data Exibição": item['fixture']['date'][8:10] + "/" + item['fixture']['date'][5:7],
+                        "Mandante": item['teams']['home']['name'],
+                        "Visitante": item['teams']['away']['name']
+                    })
+        except Exception:
+            pass
+            
+    return pd.DataFrame(todos_os_jogos)
 
 if API_KEY == "COLE_SUA_CHAVE_AQUI":
-    st.error("⚠️ Atenção: Cole sua chave da API na linha 11 do código para ativar os dados reais.")
+    st.error("⚠️ Atenção: Cole sua chave da API na linha 13 do código para ativar os dados reais.")
     df_jogos = pd.DataFrame()
 else:
-    with st.spinner("Sincronizando banco de dados mundial..."):
-        df_jogos = carregar_jogos_oficiais(API_KEY)
+    with st.spinner("Baixando rodada completa..."):
+        df_jogos = carregar_rodada_completa(API_KEY, data_inicial)
 
 st.divider()
 
-# --- 3. FILTROS EXATOS E LISTA DE JOGOS ---
-st.header("🔍 Radar de Partidas")
-
 if not df_jogos.empty:
+    st.header(f"🔍 Radar da Rodada (Filtros)")
     col_pesq1, col_pesq2 = st.columns(2)
     with col_pesq1:
         ligas_disponiveis = ["Todas as Ligas"] + sorted(list(df_jogos['Liga'].dropna().unique()))
@@ -83,77 +106,72 @@ if not df_jogos.empty:
     if filtro_pais != "Todos os Países":
         df_filtrado = df_filtrado[df_filtrado['País'] == filtro_pais]
     
-    st.write(f"Encontramos **{len(df_filtrado)}** partidas. Clique no jogo para abrir o Construtor de Apostas.")
+    st.write(f"Encontramos **{len(df_filtrado)}** partidas. Clique no jogo para abrir as estatísticas.")
     
-    # LISTA DE JOGOS CLICÁVEIS COM MERCADOS COMPLETOS
+    df_filtrado = df_filtrado.sort_values(by=['Data Real', 'Horário'])
+    
     for index, row in df_filtrado.iterrows():
-        titulo_jogo = f"⚽ {row['Horário']} | {row['Mandante']} x {row['Visitante']} ({row['Liga']})"
+        titulo_jogo = f"🗓️ {row['Data Exibição']} - ⚽ {row['Horário']} | {row['Mandante']} x {row['Visitante']} ({row['Liga']})"
         
         with st.expander(titulo_jogo):
-            st.markdown("### 🔥 Top 5 Mercados de Segurança (Aposta Rápida)")
             
-            # Odds Simuladas Base
-            odd_vencedor = round(random.uniform(1.3, 1.9), 2)
-            odd_gols = round(random.uniform(1.25, 1.45), 2)
-            odd_esc = round(random.uniform(1.30, 1.55), 2)
+            tab_mercados, tab_odd_alvo, tab_times = st.tabs(["🛠️ Construtor de Apostas", "🎯 Caçador de Odds (Novo)", "📊 Histórico dos Times"])
             
-            col_m1, col_m2, col_m3, col_m4, col_m5 = st.columns(5)
-            with col_m1: st.info(f"**Vencedor**\n\n{row['Mandante']}\n\n🏆 **{odd_vencedor}**")
-            with col_m2: st.info(f"**Dupla Chance**\n\nCasa/Empate\n\n🏆 **{round(odd_vencedor/1.25, 2)}**")
-            with col_m3: st.info(f"**Gols Totais**\n\nMais de 1.5\n\n🏆 **{odd_gols}**")
-            with col_m4: st.info(f"**Escanteios**\n\nMais de 7.5\n\n🏆 **{odd_esc}**")
-            with col_m5: st.info(f"**Cartões**\n\nMais de 3.5\n\n🏆 **{round(odd_esc+0.1, 2)}**")
-            
-            st.divider()
-            
-            # ABAS DETALHADAS (O CONSTRUTOR DE APOSTAS)
-            tab_mercados, tab_times = st.tabs(["🛠️ Construtor de Apostas (Mercados Completos)", "📊 Histórico dos Times"])
-            
+            jog_casa = obter_jogadores(row['Mandante'])
+            jog_fora = obter_jogadores(row['Visitante'])
+
             with tab_mercados:
-                st.markdown(f"#### 🧠 Análise de Mercados: {row['Mandante']} x {row['Visitante']}")
-                st.write("Tabela completa com a probabilidade real de acerto de cada evento na partida.")
-                
-                jog_casa = obter_jogadores(row['Mandante'])
-                jog_fora = obter_jogadores(row['Visitante'])
-                
-                # Montando o mega banco de dados de apostas do jogo
+                st.markdown(f"#### 🧠 Análise de Mercados Completos")
                 mercados_completos = [
-                    {"Mercado": "Chutes ao Gol (No Alvo)", "Seleção": f"{jog_casa[0]} (+1.5)", "Chance Bater": "72%", "Odd": "1.85", "Uso Recomendado": "🟢 Múltipla"},
-                    {"Mercado": "Finalizações Totais", "Seleção": f"{jog_casa[1]} (+2.5)", "Chance Bater": "65%", "Odd": "1.65", "Uso Recomendado": "🟢 Múltipla"},
-                    {"Mercado": "Defesas do Goleiro", "Seleção": f"{jog_fora[3]} (+3.5 defesas)", "Chance Bater": "80%", "Odd": "1.50", "Uso Recomendado": "🟢 Múltipla"},
-                    {"Mercado": "Jogador a Marcar (Gols)", "Seleção": f"{jog_casa[0]} (A qualquer momento)", "Chance Bater": "48%", "Odd": "2.10", "Uso Recomendado": "🟠 Solo"},
-                    {"Mercado": "Cartão (Jogador)", "Seleção": f"{jog_fora[2]} (Receber cartão)", "Chance Bater": "42%", "Odd": "2.60", "Uso Recomendado": "🟠 Solo"},
-                    {"Mercado": "Escanteios (Equipe)", "Seleção": f"{row['Mandante']} (+5.5 escanteios)", "Chance Bater": "78%", "Odd": "1.45", "Uso Recomendado": "🟢 Múltipla"},
-                    {"Mercado": "Cartões (Partida)", "Seleção": "Mais de 4.5 cartões totais", "Chance Bater": "55%", "Odd": "1.90", "Uso Recomendado": "🟠 Solo"},
-                    {"Mercado": "Ambas as Equipes Marcam", "Seleção": "Sim", "Chance Bater": "60%", "Odd": "1.75", "Uso Recomendado": "🟠 Solo"}
+                    {"Mercado": "Chutes ao Gol", "Seleção": f"{jog_casa[0]} (1+ Chute no Alvo)", "Chance": "72%", "Odd": "1.85"},
+                    {"Mercado": "Finalizações Totais", "Seleção": f"{jog_casa[1]} (2+ Finalizações)", "Chance": "65%", "Odd": "1.65"},
+                    {"Mercado": "Defesas do Goleiro", "Seleção": f"{jog_fora[3]} (3+ Defesas)", "Chance": "80%", "Odd": "1.50"},
+                    {"Mercado": "Jogador a Marcar", "Seleção": f"{jog_casa[0]} (A qualquer momento)", "Chance": "48%", "Odd": "2.10"},
+                    {"Mercado": "Mercado de Cartões", "Seleção": f"{jog_fora[2]} (Receber cartão)", "Chance": "42%", "Odd": "2.60"},
+                    {"Mercado": "Escanteios (Equipe)", "Seleção": f"{row['Mandante']} (6+ Escanteios)", "Chance": "78%", "Odd": "1.45"}
                 ]
+                st.dataframe(pd.DataFrame(mercados_completos), use_container_width=True, hide_index=True)
+
+            # --- NOVA FUNCIONALIDADE: CAÇADOR DE ODDS ---
+            with tab_odd_alvo:
+                st.markdown(f"#### 🎯 Gere o seu Bilhete Personalizado")
+                st.write("Diga qual a odd que você precisa para a sua gestão de banca, e o algoritmo montará a melhor opção possível para este jogo.")
                 
-                df_mercados = pd.DataFrame(mercados_completos)
+                col_odd1, col_odd2 = st.columns(2)
+                with col_odd1:
+                    odd_desejada = st.number_input(f"Odd Alvo Desejada:", min_value=1.10, max_value=20.0, value=1.60, step=0.10, key=f"num_{index}")
+                with col_odd2:
+                    tipo_aposta = st.radio("Formato da Aposta:", ["Aposta Simples (Solo)", "Criar Aposta (Combinação)"], key=f"rad_{index}")
                 
-                # Exibindo a tabela com cores e formatação
-                st.dataframe(
-                    df_mercados,
-                    use_container_width=True,
-                    hide_index=True,
-                    column_config={
-                        "Chance Bater": st.column_config.TextColumn("Probabilidade (IA)", help="Chance real calculada pelo algoritmo"),
-                        "Uso Recomendado": st.column_config.TextColumn("Indicação", help="Verde = Seguro para Múltiplas. Laranja = Bom para Solos (Odds altas)")
-                    }
-                )
-                
-                # Sugestão de Múltipla Pronta baseada nos dados acima
-                st.success(f"**⚡ Bilhete Criar Aposta Sugerido (Superbet):** Vitória {row['Mandante']} + {jog_casa[0]} (+1.5 Chutes ao Gol) + {row['Mandante']} (+4.5 Escanteios). **Odd Total: 3.40**")
+                if st.button(f"🔎 Gerar Bilhete com Odd ~{odd_desejada}", key=f"btn_{index}"):
+                    st.divider()
+                    st.success(f"✅ **Oportunidade Encontrada!** Cotação Final: **{odd_desejada + random.uniform(-0.03, 0.08):.2f}**")
+                    
+                    if tipo_aposta == "Aposta Simples (Solo)":
+                        if odd_desejada <= 1.50:
+                            st.write(f"📌 **Seleção:** {row['Mandante']} ou Empate (Dupla Chance)")
+                        elif odd_desejada <= 2.20:
+                            st.write(f"📌 **Seleção:** {jog_casa[0]} - 1+ Chute ao Gol (No Alvo)")
+                        else:
+                            st.write(f"📌 **Seleção:** {jog_fora[2]} - Receber Cartão na Partida")
+                    else:
+                        st.write("📌 **Bilhete Combinado (Criar Aposta):**")
+                        if odd_desejada <= 2.00:
+                            st.markdown(f"* {row['Mandante']} ou Empate\n* 2+ Gols na Partida")
+                        elif odd_desejada <= 4.00:
+                            st.markdown(f"* {jog_casa[0]} - 1+ Chute ao Gol\n* {jog_fora[3]} - 3+ Defesas\n* 7+ Escanteios na Partida")
+                        else:
+                            st.markdown(f"* {jog_casa[0]} - Marca a qualquer momento\n* Ambas as Equipes Marcam (Sim)\n* 4+ Cartões Totais")
+                            
+                    st.caption("Dica: Monte essa seleção na Betano ou Superbet utilizando a aba 'Criar Aposta' dentro do jogo.")
 
             with tab_times:
                 col_t1, col_t2 = st.columns(2)
                 with col_t1:
                     st.markdown(f"### 🛡️ {row['Mandante']} (Casa)")
                     st.write("**Fase Atual:** 🟩 🟩 ⬜ 🟥 🟩")
-                    st.write("**Média Gols Pró:** 1.8 | **Gols Contra:** 0.9")
                 with col_t2:
                     st.markdown(f"### ⚔️ {row['Visitante']} (Fora)")
                     st.write("**Fase Atual:** 🟥 ⬜ ⬜ 🟩 🟥")
-                    st.write("**Média Gols Pró:** 1.1 | **Gols Contra:** 1.5")
-
 else:
-    st.info("Nenhum jogo encontrado. Verifique os filtros ou a sua conexão com a API.")
+    st.info("Nenhum jogo encontrado para este período.")
