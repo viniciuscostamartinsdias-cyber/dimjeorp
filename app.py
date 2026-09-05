@@ -13,7 +13,7 @@ API_KEY = "4cd900e44cb240f7b7ef7f2c2b95b423"
 # ==========================================
 
 st.title("🏆 Scanner Tipster Pro: Inteligência Quantitativa Oficial")
-st.markdown("Plataforma com **Motor Superbet Oficial**, Elencos Atualizados, Dica Progressiva, Criador Automático Completo e Planilha de Bingo por Poisson.")
+st.markdown("Plataforma com **Motor Superbet Oficial**, Elencos Atualizados, Dicas Progressivas, Criador Automático Completo e Planilha de Bingo por Poisson.")
 
 # --- 0. MOTOR MATEMÁTICO SUPERBET ---
 def calcular_probabilidade_real(media_base, linha=0.5):
@@ -242,7 +242,7 @@ with aba_dossie:
             v_nome = j_sel.split(" x ")[1].split(" (")[0]
             match_row = df_jogos[df_jogos['Mandante'] == m_nome].iloc[0]
             info_juiz = processar_arbitro_e_cartoes(match_row['Árbitro API'])
-            st.info(f"⚖️ **Árbitro:** {info_juiz['Nome']} | 🟨 **Média:** {info_juiz['Media_Cartões']} cartões/jogo")
+            st.info(f"⚖️ **Árbitro:** {info_juiz['Nome']} | 🟨 **Média:** {info_juiz['Media_Cartoes']} cartões/jogo")
             st.divider()
             
             elenco_m = obter_elenco_api_real(m_nome, API_KEY)
