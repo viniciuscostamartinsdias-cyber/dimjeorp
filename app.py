@@ -13,7 +13,7 @@ API_KEY = "4cd900e44cb240f7b7ef7f2c2b95b423"
 # ==========================================
 
 st.title("🏆 Scanner Tipster Pro: Inteligência Quantitativa Oficial")
-st.markdown("Plataforma com **Motor Superbet Oficial**, Elencos Atualizados, Dicas Progressivas e **Planilha de Bingo com xG Real Calibrado por Elitismo**.")
+st.markdown("Plataforma com **Motor Superbet Oficial**, Elencos Atualizados, Dica Progressiva, Criador Automático Completo e Planilha de Bingo por Poisson.")
 
 # --- 0. MOTOR MATEMÁTICO SUPERBET ---
 def calcular_probabilidade_real(media_base, linha=0.5):
@@ -242,7 +242,7 @@ with aba_dossie:
             v_nome = j_sel.split(" x ")[1].split(" (")[0]
             match_row = df_jogos[df_jogos['Mandante'] == m_nome].iloc[0]
             info_juiz = processar_arbitro_e_cartoes(match_row['Árbitro API'])
-            st.info(f"⚖️ **Árbitro:** {info_juiz['Nome']} | 🟨 **Média:** {info_juiz['Media_Cartoes']} cartões/jogo")
+            st.info(f"⚖️ **Árbitro:** {info_juiz['Nome']} | 🟨 **Média:** {info_juiz['Media_Cartões']} cartões/jogo")
             st.divider()
             
             elenco_m = obter_elenco_api_real(m_nome, API_KEY)
@@ -268,22 +268,147 @@ with aba_auto:
         if jogo_sel:
             m = jogo_sel.split(" x ")[0]
             v = jogo_sel.split(" x ")[1].split(" (")[0]
-            alvo_auto = st.slider("Odd Desejada:", 1.10, 10.0, 2.00, 0.10)
-            if st.button("⚡ Gerar Variações", type="primary"):
-                st.success("🔥 Variações geradas com sucesso!")
+            alvo_auto = st.slider("Odd Desejada:", 1.10, 10.0, 2.00, 0.10, key="slider_auto")
+            
+            if st.button("⚡ Gerar 4 Variações", type="primary", use_container_width=True):
+                mercados_todos = ["Gols", "Escanteios", "Cartões", "Chutes ao Gol", "Finalizações"]
+                catalogo = []
+                for cat_m in mercados_todos:
+                    catalogo.extend(obter_opcoes_por_categoria(m, v, cat_m, API_KEY))
+                
+                if not catalogo:
+                    st.warning("Mercados insuficientes gerados para esta partida.")
+                else:
+                    bilhetes_gerados = []
+                    tentativas = 0
+                    while len(bilhetes_gerados) < 4 and tentativas < 500:
+                        random.shuffle(catalogo)
+                        b_atual, odds_s, cats_u, probs_s = [], [], set(), []
+                        for item in catalogo:
+                            if item["cat_base"] in cats_u: continue
+                            odd_fut = calcular_odd_bilhete(odds_s + [item["odd"]], "Criar Aposta")
+                            if odd_fut <= (alvo_auto * 1.15) or len(b_atual) == 0:
+                                b_atual.append(item)
+                                odds_s.append(item["odd"])
+                                cats_u.add(item["cat_base"])
+                                probs_s.append(item["prob"])
+                                if odd_fut >= (alvo_auto * 0.95): break
+                        
+                        odd_fin = calcular_odd_bilhete(odds_s, "Criar Aposta")
+                        prob_med = int(sum(probs_s) / len(probs_s)) if probs_s else 75
+                        
+                        if len(b_atual) > 0 and prob_med >= 60 and odd_fin >= (alvo_auto * 0.85):
+                            sig = sorted([b['nome'] for b in b_atual])
+                            if sig not in [sorted([b['nome'] for b in bil['itens']]) for bil in bilhetes_gerados]:
+                                bilhetes_gerados.append({"itens": b_atual, "odd": odd_fin, "prob": prob_med})
+                        tentativas += 1
+                    
+                    if bilhetes_gerados:
+                        st.success(f"🔥 {len(bilhetes_gerados)} variações geradas com sucesso!")
+                        c1, c2 = st.columns(2)
+                        cols = [c1, c2, c1, c2]
+                        for idx, bilhete in enumerate(bilhetes_gerados[:4]):
+                            with cols[idx].container(border=True):
+                                st.markdown(f"**Variação {idx+1} ({m} x {v})**")
+                                for b in bilhete['itens']:
+                                    st.markdown(f"• `{b['nome']}` (Odd: {b['odd']})")
+                                st.write("")
+                                st.metric("Odd Superbet 🟥", f"{bilhete['odd']}")
+                                renderizar_confianca(bilhete['prob'])
+                    else:
+                        st.warning("Tente ajustar o controle deslizante de Odd para encontrar combinações.")
+    else:
+        st.info("Nenhuma partida carregada.")
 
 with aba_elite:
-    st.markdown("### ⚡ Múltiplas de Elite")
+    st.markdown("### ⚡ Múltiplas de Elite (Filtro 60-100%)")
     if not df_jogos.empty:
-        alvo_elite = st.slider("Odd Alvo Múltipla:", 1.10, 15.0, 4.00, 0.10)
-        if st.button("⚡ Gerar Elite"):
-            st.success("🔥 Múltipla de Elite Gerada!")
+        alvo_elite = st.slider("Selecione a Odd Alvo para a Múltipla de Elite:", 1.10, 15.0, 4.00, 0.10, key="slider_elite_alvo")
+        if st.button("⚡ Gerar Múltipla de Elite", key="btn_elite_f"):
+            qtd = min(3, len(df_jogos))
+            jogos_sugeridos = df_jogos.sample(qtd)
+            mercados_todos = ["Gols", "Escanteios", "Cartões", "Chutes ao Gol", "Finalizações"]
+            detalhes = []
+            odds_s = []
+            for _, r in jogos_sugeridos.iterrows():
+                ops = obter_opcoes_por_categoria(r['Mandante'], r['Visitante'], random.choice(mercados_todos), API_KEY)
+                if ops:
+                    sel = random.choice(ops)
+                    odds_s.append(sel["odd"])
+                    detalhes.append(f"⚽ **{r['Mandante']} x {r['Visitante']}**\n• `{sel['nome']}` (Odd: {sel['odd']})")
+            
+            odd_tot = calcular_odd_bilhete(odds_s, "Criar Aposta")
+            st.success("🔥 Múltipla de Elite Gerada com Sucesso!")
+            for d in detalhes:
+                with st.container(border=True):
+                    st.markdown(d)
+            st.metric("🏆 Odd Total Múltipla", f"{odd_tot}")
 
 with aba_personalizada:
     st.markdown("### 🛠️ Criar Aposta Master")
     if not df_jogos.empty:
         lista_j = [f"{r['Liga Categoria']} | {r['Mandante']} x {r['Visitante']}" for _, r in df_jogos.iterrows()]
-        st.multiselect("Selecione os jogos:", lista_j)
+        jogos_escolhidos = st.multiselect("Selecione os jogos para o Criar Aposta:", lista_j, key="master_jogos")
+        
+        col_m1, col_m2, col_m3, col_m4 = st.columns(4)
+        with col_m1:
+            m_gols = st.checkbox("⚽ Gols", value=True)
+            m_cantos = st.checkbox("🚩 Escanteios", value=True)
+        with col_m2:
+            m_cartoes = st.checkbox("🟨 Cartões", value=True)
+            m_chutes = st.checkbox("🎯 Chutes ao Gol", value=True)
+        with col_m3:
+            m_finalizacoes = st.checkbox("🔥 Finalizações", value=True)
+            m_handicap = st.checkbox("⚖️ Handicap", value=True)
+        with col_m4:
+            m_f_sof = st.checkbox("🛡️ Faltas Sofridas", value=True)
+            m_f_com = st.checkbox("⚠️ Faltas Cometidas", value=True)
+            
+        alvo_multipla = st.slider("Selecione a Odd Alvo para o Bilhete:", 1.10, 15.0, 4.00, 0.10, key="master_alvo")
+        
+        if st.button("⚡ Criar Múltipla Automaticamente", type="primary", use_container_width=True):
+            if not jogos_escolhidos:
+                st.warning("⚠️ Selecione pelo menos um jogo acima.")
+            else:
+                mercados_ativos = []
+                if m_gols: mercados_ativos.append("Gols")
+                if m_cantos: mercados_ativos.append("Escanteios")
+                if m_cartoes: mercados_ativos.append("Cartões")
+                if m_chutes: mercados_ativos.append("Chutes ao Gol")
+                if m_finalizacoes: mercados_ativos.append("Finalizações")
+                if m_handicap: mercados_ativos.append("Handicap")
+                if m_f_sof: mercados_ativos.append("Faltas Sofridas")
+                if m_f_com: mercados_ativos.append("Faltas Cometidas")
+                
+                odds_selecoes, probs_lista, detalhes_por_jogo = [], [], {jg: [] for jg in jogos_escolhidos}
+                for jg in jogos_escolhidos:
+                    m_n, v_n = jg.split(" | ")[1].split(" x ")
+                    for cat_m in mercados_ativos:
+                        opcoes_cat = obter_opcoes_por_categoria(m_n, v_n, cat_m, API_KEY)
+                        if opcoes_cat:
+                            escolha = random.choice(opcoes_cat)
+                            odds_selecoes.append(escolha["odd"])
+                            probs_lista.append(escolha["prob"])
+                            detalhes_por_jogo[jg].append(f"• `{escolha['nome']}` (Odd: `{escolha['odd']}`)")
+                
+                odd_atual = calcular_odd_bilhete(odds_selecoes, "Criar Aposta")
+                prob_final = int(sum(probs_lista) / len(probs_lista)) if probs_lista else 75
+                
+                st.success("🔥 Criar Aposta Master Gerado com Sucesso!")
+                for jg in jogos_escolhidos:
+                    p_nome = jg.split(" | ")[1]
+                    if detalhes_por_jogo[jg]:
+                        with st.container(border=True):
+                            st.markdown(f"⚽ **{p_nome}**")
+                            for item in detalhes_por_jogo[jg]:
+                                st.markdown(f"  {item}")
+                
+                c1, c2 = st.columns(2)
+                c1.metric("🏆 Odd Total Criar Aposta", f"{odd_atual}")
+                c2.metric("📊 Probabilidade Calculada", f"{prob_final}%")
+                renderizar_confianca(prob_final)
+    else:
+        st.info("Nenhuma partida carregada.")
 
 with aba_bingo:
     st.markdown("### 🔢 Calculadora de Placar Exato (Poisson Realista)")
