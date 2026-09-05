@@ -13,7 +13,7 @@ API_KEY = "4cd900e44cb240f7b7ef7f2c2b95b423"
 # ==========================================
 
 st.title("🏆 Scanner Tipster Pro: Inteligência Quantitativa Oficial")
-st.markdown("Plataforma com **Motor Superbet Oficial**, Elencos Atualizados, Dicas Progressivas e **Planilha de Bingo com Mapa de Calor (Poisson)**.")
+st.markdown("Plataforma com **Motor Superbet Oficial**, Elencos Atualizados, Dicas Progressivas e **Planilha de Bingo com xG Real Calibrado**.")
 
 # --- 0. MOTOR MATEMÁTICO SUPERBET ---
 def calcular_probabilidade_real(media_base, linha=0.5):
@@ -533,7 +533,7 @@ with aba_personalizada:
             
         alvo_multipla = st.slider("Selecione a Odd Alvo para o Bilhete:", 1.10, 15.0, 4.00, 0.10, key="slider_odd_alvo_custom")
         
-        if st.button("⚡ Criar Múltipla Automaticamente", type="primary", use_container_width=True):
+        if st.button("⚡ Criar Múltipla Automatically", type="primary", use_container_width=True):
             if not jogos_escolhidos:
                 st.warning("⚠️ Selecione pelo menos um jogo.")
             else:
@@ -607,7 +607,7 @@ with aba_personalizada:
                     renderizar_confianca(prob_final_calculada)
 
 with aba_bingo:
-    st.markdown("### 🔢 Calculadora Automática de Placar Exato (Mapa de Calor)")
+    st.markdown("### 🔢 Calculadora Automática de Placar Exato (Poisson Realista)")
     if not df_jogos.empty:
         opcoes_bingo = [f"{row['Mandante']} x {row['Visitante']} ({row['Liga Categoria']})" for _, row in df_jogos.iterrows()]
         jogo_bingo = st.selectbox("Selecione o Jogo para Calcular o Bingo:", opcoes_bingo, key="bingo_jogo")
@@ -619,13 +619,18 @@ with aba_bingo:
             elenco_m = obter_elenco_api_real(m_nome_bingo, API_KEY)
             elenco_v = obter_elenco_api_real(v_nome_bingo, API_KEY)
             
-            xg_m_base = sum(p.get("media_gols", 0) for p in elenco_m) if elenco_m else 1.2
-            xg_v_base = sum(p.get("media_gols", 0) for p in elenco_v) if elenco_v else 1.0
+            # Cálculo xG Ponderado e Realista (Média ponderada dos atacantes principais + fator liga)
+            gols_m_lista = [p.get("media_gols", 0) for p in elenco_m if p.get("pos") in ["Atacante", "Meia"]]
+            gols_v_lista = [p.get("media_gols", 0) for p in elenco_v if p.get("pos") in ["Atacante", "Meia"]]
             
-            xg_m = min(max(xg_m_base * 1.15, 0.5), 3.5)
-            xg_v = min(max(xg_v_base, 0.5), 3.5)
+            base_m = sum(gols_m_lista) / max(1, len(gols_m_lista)) * 2.2 if gols_m_lista else 1.1
+            base_v = sum(gols_v_lista) / max(1, len(gols_v_lista)) * 2.0 if gols_v_lista else 0.9
             
-            st.info(f"📊 **Expectativa de Gols Calculada (xG):** {m_nome_bingo} (**{xg_m:.2f}**) vs {v_nome_bingo} (**{xg_v:.2f}**)")
+            # Aplicação de limites realistas de xG no futebol (raramente ultrapassa 2.8 por time em jogos normais)
+            xg_m = round(min(max(base_m, 0.7), 2.7), 2)
+            xg_v = round(min(max(base_v, 0.5), 2.4), 2)
+            
+            st.info(f"📊 **Expectativa de Gols Ponderada (xG):** {m_nome_bingo} (**{xg_m}**) vs {v_nome_bingo} (**{xg_v}**)")
             
             probs = []
             max_gols = 6
@@ -643,7 +648,6 @@ with aba_bingo:
                                     index=[f"{i} Gols ({m_nome_bingo[:3]})" for i in range(max_gols)])
             
             st.write("📈 **Mapa de Calor de Probabilidade (%)**")
-            
             st.dataframe(df_bingo.style.background_gradient(cmap='YlGn', axis=None).format("{:.1f}%"), use_container_width=True)
             
             max_prob = 0
