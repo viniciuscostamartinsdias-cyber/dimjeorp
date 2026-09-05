@@ -13,9 +13,9 @@ API_KEY = "4cd900e44cb240f7b7ef7f2c2b95b423"
 # ==========================================
 
 st.title("🏆 Scanner Tipster Pro: Inteligência Quantitativa Oficial")
-st.markdown("Plataforma com **Motor Superbet Oficial**, Análise Avançada Casa x Fora, Últimos 5 Jogos e Planilha de Bingo por Poisson.")
+st.markdown("Plataforma com **Motor Superbet Oficial**, Caching de Proteção de API, Divisão Casa x Fora e Planilha de Bingo.")
 
-# --- 0. MOTOR MATEMÁTICO SUPERBET COM HOME/AWAY SPLIT & ÚLTIMOS 5 JOGOS ---
+# --- 0. MOTOR MATEMÁTICO SUPERBET ---
 def calcular_probabilidade_real(media_base, linha=0.5):
     if media_base <= 0.1: return 0.02
     fator_live = random.uniform(0.98, 1.02)
@@ -83,7 +83,7 @@ def processar_arbitro_e_cartoes(nome_arbitro_api):
 
     return {"Nome": nome, "Media_Cartoes": c, "Media_Faltas": f, "Recomendacao": rec, "Sugestao": sugestao}
 
-# --- 3. BANCO DE DADOS DE ELENCOS E ESTATÍSTICAS REAIS COM SPLIT CASA/FORA ---
+# --- 3. BUSCA SEGURA COM CACHE TTL DE 1 HORA (EVITA EXCEDER A API) ---
 @st.cache_data(ttl=3600)
 def obter_elenco_api_real(time_nome, api_key):
     banco_elencos = {
@@ -122,6 +122,39 @@ def obter_elenco_api_real(time_nome, api_key):
         if key.lower() in time_nome.lower() or time_nome.lower() in key.lower():
             return banco_elencos[key]
 
+    headers = {'x-apisports-key': api_key}
+    try:
+        url_busca = f"https://v3.football.api-sports.io/teams?search={time_nome}"
+        resp = requests.get(url_busca, headers=headers, timeout=5).json()
+        if 'response' in resp and len(resp['response']) > 0:
+            team_id = resp['response'][0]['team']['id']
+            url_elenco = f"https://v3.football.api-sports.io/players/squads?team={team_id}"
+            resp_elenco = requests.get(url_elenco, headers=headers, timeout=5).json()
+            
+            if 'response' in resp_elenco and len(resp_elenco['response']) > 0:
+                jogadores_api = resp_elenco['response'][0]['players']
+                elenco_formatado = []
+                for j in jogadores_api:
+                    num = j.get('number', random.randint(2, 99))
+                    pos = j.get('position', 'Meia')
+                    if pos == 'Goalkeeper': pos = 'Goleiro'
+                    elif pos == 'Defender': pos = 'Defensor'
+                    elif pos == 'Midfielder': pos = 'Meia'
+                    elif pos == 'Attacker': pos = 'Atacante'
+                    
+                    elenco_formatado.append({
+                        "num": str(num), "nome": j.get('name', 'Jogador'), "pos": pos,
+                        "gols_casa": 0.5 if pos == 'Atacante' else 0.2,
+                        "gols_fora": 0.3 if pos == 'Atacante' else 0.1,
+                        "fin_5j": 3.5 if pos in ['Atacante', 'Meia'] else 0.8,
+                        "chutes_5j": 1.6 if pos in ['Atacante', 'Meia'] else 0.3,
+                        "cartoes_5j": 0.2
+                    })
+                if elenco_formatado:
+                    return elenco_formatado[:15]
+    except Exception:
+        pass
+
     return [
         {"num": "9", "nome": "Atacante Principal", "pos": "Atacante", "gols_casa": 0.7, "gols_fora": 0.4, "fin_5j": 3.8, "chutes_5j": 1.8, "cartoes_5j": 0.2},
         {"num": "10", "nome": "Meia Armador", "pos": "Meia", "gols_casa": 0.35, "gols_fora": 0.2, "fin_5j": 2.7, "chutes_5j": 1.2, "cartoes_5j": 0.3}
@@ -134,11 +167,8 @@ def calcular_xg_avancado(time_nome, is_mandante, elenco):
         gols_vals = [p.get("gols_fora", 0.2) for p in elenco]
         
     base = sum(gols_vals) * 1.4 if gols_vals else 1.1
-    
-    if is_mandante:
-        base *= 1.20 
-    else:
-        base *= 0.88 
+    if is_mandante: base *= 1.20 
+    else: base *= 0.88 
         
     elite_times = ["manchester city", "real madrid", "bayern", "barcelona", "arsenal", "liverpool", "flamengo", "palmeiras", "são paulo", "inter", "napoli", "aston villa"]
     if any(t in time_nome.lower() for t in elite_times):
@@ -208,7 +238,7 @@ def carregar_rodada_completa(api_key, data_base):
     except Exception:
         pass
     
-    # Fallback garantido para testes e uso contínuo se a API não retornar dados para a data
+    # Fallback garantido para manter a plataforma rodando sem esgotar cota se a API falhar
     if not todos_os_jogos:
         todos_os_jogos = [
             {"Fixture ID": 101, "Liga Categoria": "Premier League (Inglaterra)", "Liga API": "Premier League", "Data": data_base.strftime("%Y-%m-%d"), "Horário": "12:30", "Mandante": "Hull City", "Visitante": "Aston Villa", "Árbitro API": "Michael Oliver"},
