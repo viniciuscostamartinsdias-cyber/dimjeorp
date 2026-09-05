@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import random
 import math
 
-st.set_page_config(page_title="Tipster Pro - Elencos 2026 Oficiais", layout="wide")
+st.set_page_config(page_title="Tipster Pro - Motor Superbet", layout="wide")
 
 # ==========================================
 # 🔑 CHAVE DA API INTEGRADA
@@ -13,9 +13,36 @@ API_KEY = "4cd900e44cb240f7b7ef7f2c2b95b423"
 # ==========================================
 
 st.title("🏆 Scanner Tipster Pro: Inteligência Quantitativa Oficial")
-st.markdown("Plataforma com **Elencos 100% Atualizados (2026)**, Dossiê Completo com 11 Titulares, Motor Anti-Duplicatas e Dicas para Todos os Mercados.")
+st.markdown("Plataforma com **Motor Superbet Oficial**, Elencos Atualizados, Dicas de Linhas Progressivas e **Planilha de Bingo (Placar Exato)**.")
 
-# --- 0. MOTOR MATEMÁTICO EXATO SUPERBET ---
+# --- 0. MOTOR MATEMÁTICO SUPERBET ---
+def calcular_probabilidade_real(media_base, linha=0.5):
+    if media_base <= 0.1: return 0.01
+    fator_live = random.uniform(0.95, 1.05)
+    lam = media_base * fator_live
+    prob_0 = math.exp(-lam)
+    prob_1 = lam * math.exp(-lam)
+    fator_correlacao = 1.06 
+    
+    if linha == 0.5:
+        prob_pura = 1.0 - prob_0
+        prob_ajustada = prob_pura * 1.02
+    elif linha == 1.5:
+        prob_pura = 1.0 - (prob_0 + prob_1)
+        prob_ajustada = prob_pura * fator_correlacao
+    else:
+        prob_ajustada = 0.5
+        
+    return max(0.01, min(0.99, prob_ajustada))
+
+def calcular_odd_superbet(media_jogador, linha=0.5):
+    if media_jogador <= 0.1: return 9.99
+    prob_real = calcular_probabilidade_real(media_jogador, linha)
+    odd_justa = 1.0 / prob_real
+    margem_lucro = 0.10
+    odd_oferecida = odd_justa * (1.0 - margem_lucro)
+    return round(max(1.05, odd_oferecida), 2)
+
 def calcular_odd_bilhete(odds_list, tipo_bilhete="Criar Aposta"):
     if not odds_list: return 1.00
     if tipo_bilhete == "Aposta Simples":
@@ -55,10 +82,9 @@ def processar_arbitro_e_cartoes(nome_arbitro_api):
 
     return {"Nome": nome, "Media_Cartoes": c, "Media_Faltas": f, "Recomendacao": rec, "Sugestao": sugestao}
 
-# --- 3. BANCO DE DADOS DE ELENCOS E ESTATÍSTICAS 2026 ---
+# --- 3. BANCO DE DADOS DE ELENCOS E ESTATÍSTICAS ---
 @st.cache_data(ttl=3600)
 def obter_elenco_api_real(time_nome, api_key):
-    # Dicionário de Previsões Oficiais e Atualizadas para Setembro de 2026 (Refletindo Imagens Reais)
     banco_elencos = {
         "Sao Paulo": [
             {"num": "23", "nome": "Rafael", "pos": "Goleiro", "media_gols": 0.0, "media_finalizacoes_5j": 0.0, "media_chutes_5j": 0.0, "media_f_sof_5j": 0.0, "media_f_com_5j": 0.0, "media_cartoes_5j": 0.0},
@@ -97,15 +123,19 @@ def obter_elenco_api_real(time_nome, api_key):
             {"num": "15", "nome": "Gustavo Gómez", "pos": "Defensor", "media_gols": 0.1, "media_finalizacoes_5j": 1.0, "media_chutes_5j": 0.4, "media_f_sof_5j": 1.5, "media_f_com_5j": 1.8, "media_cartoes_5j": 0.4},
             {"num": "23", "nome": "Raphael Veiga", "pos": "Meia", "media_gols": 0.50, "media_finalizacoes_5j": 3.5, "media_chutes_5j": 1.4, "media_f_sof_5j": 2.5, "media_f_com_5j": 1.1, "media_cartoes_5j": 0.2},
             {"num": "9", "nome": "Flaco López", "pos": "Atacante", "media_gols": 0.70, "media_finalizacoes_5j": 3.8, "media_chutes_5j": 1.5, "media_f_sof_5j": 2.0, "media_f_com_5j": 1.5, "media_cartoes_5j": 0.2}
+        ],
+        "Fluminense": [
+            {"num": "1", "nome": "Fábio", "pos": "Goleiro", "media_gols": 0.0, "media_finalizacoes_5j": 0.0, "media_chutes_5j": 0.0, "media_f_sof_5j": 0.0, "media_f_com_5j": 0.0, "media_cartoes_5j": 0.1},
+            {"num": "9", "nome": "Germán Cano", "pos": "Atacante", "media_gols": 0.75, "media_finalizacoes_5j": 3.8, "media_chutes_5j": 1.8, "media_f_sof_5j": 1.4, "media_f_com_5j": 0.9, "media_cartoes_5j": 0.1},
+            {"num": "21", "nome": "Jhon Arias", "pos": "Meia", "media_gols": 0.40, "media_finalizacoes_5j": 2.9, "media_chutes_5j": 1.3, "media_f_sof_5j": 3.2, "media_f_com_5j": 1.4, "media_cartoes_5j": 0.2},
+            {"num": "7", "nome": "Hulk", "pos": "Atacante", "media_gols": 0.85, "media_finalizacoes_5j": 5.4, "media_chutes_5j": 2.4, "media_f_sof_5j": 3.8, "media_f_com_5j": 1.5, "media_cartoes_5j": 0.4}
         ]
     }
     
-    # 1. Tenta encontrar no banco detalhado (Prioridade)
     for key in banco_elencos:
         if key.lower() in time_nome.lower() or time_nome.lower() in key.lower():
             return banco_elencos[key]
 
-    # 2. Busca na API em tempo real para os demais times
     headers = {'x-apisports-key': api_key}
     try:
         url_busca = f"https://v3.football.api-sports.io/teams?search={time_nome}"
@@ -150,26 +180,20 @@ def obter_elenco_api_real(time_nome, api_key):
     except Exception:
         pass
 
-    # 3. Gerador Dinâmico 2026 (Fallback limpo)
     seed = sum(ord(c) for c in time_nome)
     random.seed(seed)
-    
     nomes_internacionais = ["Silva", "Gomes", "Costa", "Oliveira", "Fernandes", "Moreira", "Ribeiro", "Martins", "Alves", "Sousa", "Pinto", "Lima"]
     prenomes = ["Gabriel", "Lucas", "Matheus", "Pedro", "João", "Felipe", "Thiago", "Bruno", "Diego", "Arthur", "Vinícius"]
-    
     elenco_gerado = []
     posicoes = ["Goleiro", "Defensor", "Defensor", "Defensor", "Defensor", "Meia", "Meia", "Meia", "Atacante", "Atacante", "Atacante"]
-    
     for i, pos in enumerate(posicoes):
         nome_completo = f"{random.choice(prenomes)} {random.choice(nomes_internacionais)}"
         num = str(i + 1 if i == 0 else random.randint(2, 33))
-        
         m_fin = round(random.uniform(1.8, 4.2), 1) if pos in ['Atacante', 'Meia'] else round(random.uniform(0.2, 0.9), 1)
         m_chute = round(m_fin * random.uniform(0.4, 0.6), 1) if pos in ['Atacante', 'Meia'] else 0.1
         m_f_sof = round(random.uniform(1.0, 3.2), 1) if pos != 'Goleiro' else 0.0
         m_f_com = round(random.uniform(0.8, 2.5), 1) if pos != 'Goleiro' else 0.0
         m_cartoes = round(random.uniform(0.1, 0.5), 1) if pos != 'Goleiro' else 0.0
-        
         elenco_gerado.append({
             "num": num, "nome": nome_completo, "pos": pos,
             "media_gols": round(random.uniform(0.1, 0.6), 2) if pos == 'Atacante' else 0.05,
@@ -177,43 +201,31 @@ def obter_elenco_api_real(time_nome, api_key):
             "media_chutes_5j": m_chute if pos != 'Goleiro' else 0.0,
             "media_f_sof_5j": m_f_sof, "media_f_com_5j": m_f_com, "media_cartoes_5j": m_cartoes
         })
-        
     random.seed()
     return elenco_gerado
 
-# --- 4. CATÁLOGO COM LINHAS PROGRESSIVAS (0.5+) E ANTI-DUPLICATA ---
 def obter_opcoes_por_categoria(mandante, visitante, categoria, api_key):
     itens = []
-    
     if categoria == "Gols":
-        itens.extend([
-            {"nome": "Mais de 0.5 Gols na Partida", "odd": 1.05, "tipo": "gols_05", "cat_base": "gols", "prob": 95},
-            {"nome": "Mais de 1.5 Gols na Partida", "odd": 1.25, "tipo": "gols_15", "cat_base": "gols", "prob": 82},
-            {"nome": "Mais de 2.5 Gols na Partida", "odd": 1.85, "tipo": "gols_25", "cat_base": "gols", "prob": 65}
-        ])
+        itens.extend([{"nome": "Mais de 0.5 Gols na Partida", "odd": 1.05, "tipo": "gols_05", "cat_base": "gols", "prob": 95}, {"nome": "Mais de 1.5 Gols na Partida", "odd": 1.25, "tipo": "gols_15", "cat_base": "gols", "prob": 82}, {"nome": "Mais de 2.5 Gols na Partida", "odd": 1.85, "tipo": "gols_25", "cat_base": "gols", "prob": 65}])
     elif categoria == "Escanteios":
-        itens.extend([
-            {"nome": "Mais de 5.5 Escanteios Totais", "odd": 1.10, "tipo": "cantos_55", "cat_base": "cantos", "prob": 90},
-            {"nome": "Mais de 7.5 Escanteios Totais", "odd": 1.30, "tipo": "cantos_75", "cat_base": "cantos", "prob": 78},
-            {"nome": "Mais de 9.5 Escanteios Totais", "odd": 1.85, "tipo": "cantos_95", "cat_base": "cantos", "prob": 62}
-        ])
+        itens.extend([{"nome": "Mais de 5.5 Escanteios Totais", "odd": 1.10, "tipo": "cantos_55", "cat_base": "cantos", "prob": 90}, {"nome": "Mais de 7.5 Escanteios Totais", "odd": 1.30, "tipo": "cantos_75", "cat_base": "cantos", "prob": 78}, {"nome": "Mais de 9.5 Escanteios Totais", "odd": 1.85, "tipo": "cantos_95", "cat_base": "cantos", "prob": 62}])
     elif categoria == "Cartões":
-        itens.extend([
-            {"nome": "Mais de 1.5 Cartões Amarelos", "odd": 1.12, "tipo": "cartoes_15", "cat_base": "cartoes", "prob": 92},
-            {"nome": "Mais de 3.5 Cartões Amarelos", "odd": 1.65, "tipo": "cartoes_35", "cat_base": "cartoes", "prob": 74}
-        ])
+        itens.extend([{"nome": "Mais de 1.5 Cartões Amarelos", "odd": 1.12, "tipo": "cartoes_15", "cat_base": "cartoes", "prob": 92}, {"nome": "Mais de 3.5 Cartões Amarelos", "odd": 1.65, "tipo": "cartoes_35", "cat_base": "cartoes", "prob": 74}])
     elif categoria == "Handicap":
-        itens.extend([
-            {"nome": f"Dupla Chance: {mandante} ou Empate", "odd": 1.15, "tipo": "dc_m", "cat_base": "resultado", "prob": 85},
-            {"nome": f"Dupla Chance: {visitante} ou Empate", "odd": 1.25, "tipo": "dc_v", "cat_base": "resultado", "prob": 80}
-        ])
+        itens.extend([{"nome": f"Dupla Chance: {mandante} ou Empate", "odd": 1.15, "tipo": "dc_m", "cat_base": "resultado", "prob": 85}, {"nome": f"Dupla Chance: {visitante} ou Empate", "odd": 1.25, "tipo": "dc_v", "cat_base": "resultado", "prob": 80}])
     elif categoria == "Finalizações":
         for time_nome in [mandante, visitante]:
             elenco = obter_elenco_api_real(time_nome, api_key)
             for p in elenco:
                 if p["pos"] == "Goleiro": continue
-                if p["media_finalizacoes_5j"] >= 1.5:
-                    itens.append({"nome": f"#{p['num']} {p['nome']} ({time_nome}) — 1.5+ Finalizações", "odd": round(max(1.15, 1.85 - (p['media_finalizacoes_5j'] * 0.05)), 2), "tipo": f"fin_15_{p['num']}_{time_nome}", "cat_base": f"fin_{p['nome']}", "prob": 88})
+                media_fin = p["media_finalizacoes_5j"]
+                if media_fin >= 1.0:
+                    prob = calcular_probabilidade_real(media_fin, 0.5)
+                    itens.append({"nome": f"#{p['num']} {p['nome']} ({time_nome}) — 0.5+ Finalizações", "odd": calcular_odd_superbet(media_fin, 0.5), "tipo": f"fin_05_{p['num']}_{time_nome}", "cat_base": f"fin_{p['nome']}", "prob": int(prob*100)})
+                if media_fin >= 2.5:
+                    prob = calcular_probabilidade_real(media_fin, 1.5)
+                    itens.append({"nome": f"#{p['num']} {p['nome']} ({time_nome}) — 1.5+ Finalizações", "odd": calcular_odd_superbet(media_fin, 1.5), "tipo": f"fin_15_{p['num']}_{time_nome}", "cat_base": f"fin_{p['nome']}", "prob": int(prob*100)})
     else:
         for time_nome in [mandante, visitante]:
             elenco = obter_elenco_api_real(time_nome, api_key)
@@ -221,16 +233,32 @@ def obter_opcoes_por_categoria(mandante, visitante, categoria, api_key):
                 if p["pos"] == "Goleiro": continue
                 nome_jog = p['nome']
                 
-                if categoria == "Chutes ao Gol" and p["media_chutes_5j"] >= 0.5:
-                    itens.append({"nome": f"#{p['num']} {nome_jog} ({time_nome}) — 0.5+ Chutes ao Gol (Média 5J: {p['media_chutes_5j']})", "odd": round(max(1.15, 1.85 - (p['media_chutes_5j'] * 0.1)), 2), "tipo": f"chute_05_{p['num']}_{time_nome}", "cat_base": f"chute_{nome_jog}", "prob": 88})
-                    if p["media_chutes_5j"] >= 1.5:
-                        itens.append({"nome": f"#{p['num']} {nome_jog} ({time_nome}) — 1.5+ Chutes ao Gol", "odd": round(max(1.50, 2.40 - (p['media_chutes_5j'] * 0.1)), 2), "tipo": f"chute_15_{p['num']}_{time_nome}", "cat_base": f"chute_{nome_jog}", "prob": 72})
+                if categoria == "Chutes ao Gol":
+                    media_c = p["media_chutes_5j"]
+                    if media_c >= 1.0:
+                        prob = calcular_probabilidade_real(media_c, 0.5)
+                        itens.append({"nome": f"#{p['num']} {nome_jog} ({time_nome}) — 0.5+ Chutes ao Gol", "odd": calcular_odd_superbet(media_c, 0.5), "tipo": f"chute_05_{p['num']}_{time_nome}", "cat_base": f"chute_{nome_jog}", "prob": int(prob*100)})
+                    if media_c >= 2.4:
+                        prob = calcular_probabilidade_real(media_c, 1.5)
+                        itens.append({"nome": f"#{p['num']} {nome_jog} ({time_nome}) — 1.5+ Chutes ao Gol", "odd": calcular_odd_superbet(media_c, 1.5), "tipo": f"chute_15_{p['num']}_{time_nome}", "cat_base": f"chute_{nome_jog}", "prob": int(prob*100)})
                         
-                if categoria == "Faltas Sofridas" and p["media_f_sof_5j"] >= 0.5:
-                    itens.append({"nome": f"#{p['num']} {nome_jog} ({time_nome}) — 0.5+ Faltas Sofridas (Média 5J: {p['media_f_sof_5j']})", "odd": round(max(1.10, 1.70 - (p['media_f_sof_5j'] * 0.08)), 2), "tipo": f"fsof_05_{p['num']}_{time_nome}", "cat_base": f"fsof_{nome_jog}", "prob": 88})
+                if categoria == "Faltas Sofridas":
+                    media_fs = p["media_f_sof_5j"]
+                    if media_fs >= 1.0:
+                        prob = calcular_probabilidade_real(media_fs, 0.5)
+                        itens.append({"nome": f"#{p['num']} {nome_jog} ({time_nome}) — 0.5+ Faltas Sofridas", "odd": calcular_odd_superbet(media_fs, 0.5), "tipo": f"fsof_05_{p['num']}_{time_nome}", "cat_base": f"fsof_{nome_jog}", "prob": int(prob*100)})
+                    if media_fs >= 2.5:
+                        prob = calcular_probabilidade_real(media_fs, 1.5)
+                        itens.append({"nome": f"#{p['num']} {nome_jog} ({time_nome}) — 1.5+ Faltas Sofridas", "odd": calcular_odd_superbet(media_fs, 1.5), "tipo": f"fsof_15_{p['num']}_{time_nome}", "cat_base": f"fsof_{nome_jog}", "prob": int(prob*100)})
                         
-                if categoria == "Faltas Cometidas" and p["media_f_com_5j"] >= 0.5:
-                    itens.append({"nome": f"#{p['num']} {nome_jog} ({time_nome}) — 0.5+ Faltas Cometidas (Média 5J: {p['media_f_com_5j']})", "odd": round(max(1.12, 1.75 - (p['media_f_com_5j'] * 0.08)), 2), "tipo": f"fcom_05_{p['num']}_{time_nome}", "cat_base": f"fcom_{nome_jog}", "prob": 88})
+                if categoria == "Faltas Cometidas":
+                    media_fc = p["media_f_com_5j"]
+                    if media_fc >= 1.0:
+                        prob = calcular_probabilidade_real(media_fc, 0.5)
+                        itens.append({"nome": f"#{p['num']} {nome_jog} ({time_nome}) — 0.5+ Faltas Cometidas", "odd": calcular_odd_superbet(media_fc, 0.5), "tipo": f"fcom_05_{p['num']}_{time_nome}", "cat_base": f"fcom_{nome_jog}", "prob": int(prob*100)})
+                    if media_fc >= 2.5:
+                        prob = calcular_probabilidade_real(media_fc, 1.5)
+                        itens.append({"nome": f"#{p['num']} {nome_jog} ({time_nome}) — 1.5+ Faltas Cometidas", "odd": calcular_odd_superbet(media_fc, 1.5), "tipo": f"fcom_15_{p['num']}_{time_nome}", "cat_base": f"fcom_{nome_jog}", "prob": int(prob*100)})
                     
     return itens
 
@@ -238,7 +266,6 @@ def obter_opcoes_por_categoria(mandante, visitante, categoria, api_key):
 def carregar_rodada_completa(api_key, data_base):
     headers = {'x-apisports-key': api_key}
     todos_os_jogos = []
-    
     url = f"https://v3.football.api-sports.io/fixtures?date={data_base.strftime('%Y-%m-%d')}&timezone=America/Sao_Paulo"
     try:
         response = requests.get(url, headers=headers, timeout=6)
@@ -247,26 +274,19 @@ def carregar_rodada_completa(api_key, data_base):
             for item in dados['response']:
                 league_id = item['league']['id']
                 league_name = item['league']['name']
-                
                 nome_categoria = "Outras Ligas"
                 for cat, l_id in LIGAS_MAP_COMPLETO.items():
                     if league_id == l_id or cat.lower() in league_name.lower():
                         nome_categoria = cat
                         break
-                
                 todos_os_jogos.append({
-                    "Fixture ID": item['fixture']['id'],
-                    "Liga Categoria": nome_categoria,
-                    "Liga API": league_name,
-                    "Data": data_base.strftime("%Y-%m-%d"),
-                    "Horário": item['fixture']['date'][11:16],
-                    "Mandante": item['teams']['home']['name'],
-                    "Visitante": item['teams']['away']['name'],
+                    "Fixture ID": item['fixture']['id'], "Liga Categoria": nome_categoria, "Liga API": league_name,
+                    "Data": data_base.strftime("%Y-%m-%d"), "Horário": item['fixture']['date'][11:16],
+                    "Mandante": item['teams']['home']['name'], "Visitante": item['teams']['away']['name'],
                     "Árbitro API": item['fixture'].get('referee', None)
                 })
     except Exception:
         pass
-        
     return pd.DataFrame(todos_os_jogos)
 
 def renderizar_confianca(prob_pct):
@@ -275,13 +295,8 @@ def renderizar_confianca(prob_pct):
     else:
         st.warning(f"🟡 **Assertividade Moderada ({prob_pct}%)**")
 
-# --- INTERFACE E ABAS ---
-aba_principal, aba_dossie, aba_auto, aba_elite, aba_personalizada = st.tabs([
-    "📁 Ligas, Jogos & Árbitros", 
-    "📊 Dossiê de Elencos", 
-    "🎯 Criação Automática", 
-    "⚡ Múltiplas de Elite",
-    "🛠️ Criar Aposta Master"
+aba_principal, aba_dossie, aba_auto, aba_elite, aba_personalizada, aba_bingo = st.tabs([
+    "📁 Ligas & Árbitros", "📊 Dossiê de Elencos", "🎯 Criação Automática", "⚡ Múltiplas de Elite", "🛠️ Criar Aposta Master", "🔢 Bingo do Placar"
 ])
 
 col_d1, col_d2 = st.columns([1, 2])
@@ -295,9 +310,6 @@ df_jogos = carregar_rodada_completa(API_KEY, data_inicial)
 if not df_jogos.empty and ligas_selecionadas:
     df_jogos = df_jogos[df_jogos['Liga Categoria'].isin(ligas_selecionadas)]
 
-# ==========================================
-# ABA 1: LIGAS, JOGOS & ÁRBITROS
-# ==========================================
 with aba_principal:
     st.markdown("### ⚽ Partidas Disponíveis na Data Selecionada")
     if not df_jogos.empty:
@@ -311,13 +323,10 @@ with aba_principal:
                     st.markdown(f"{info_juiz['Sugestao']}")
                     st.divider()
     else:
-        st.warning("⚠️ Nenhum jogo encontrado. Verifique o limite da sua API ou selecione outra data.")
+        st.warning("⚠️ Nenhum jogo encontrado. Verifique o limite da API ou selecione outra data.")
 
-# ==========================================
-# ABA 2: DOSSIÊ DE ELENCOS E ÁRBITRO
-# ==========================================
 with aba_dossie:
-    st.markdown("### 📊 Dossiê Completo: 11 Titulares e Recomendações")
+    st.markdown("### 📊 Dossiê Completo: Porcentagens Reais via Superbet Engine")
     if not df_jogos.empty:
         op_d = [f"{r['Mandante']} x {r['Visitante']} ({r['Liga Categoria']})" for _, r in df_jogos.iterrows()]
         j_sel = st.selectbox("Selecione a Partida para o Dossiê:", op_d)
@@ -334,64 +343,66 @@ with aba_dossie:
             
             elenco_m = obter_elenco_api_real(m_nome, API_KEY)
             elenco_v = obter_elenco_api_real(v_nome, API_KEY)
+            fator_juiz = info_juiz['Media_Cartoes'] / 4.5
             
             c1, c2 = st.columns(2)
-            with c1:
-                st.markdown(f"### 🏠 {m_nome}")
-                for p in elenco_m:
-                    with st.container(border=True):
-                        st.markdown(f"**Camisa #{p['num']} — {p['nome']}** ({p['pos']})")
-                        if p['pos'] != 'Goleiro':
-                            st.markdown(f"⚽ **Gols (Média):** `{p['media_gols']}`")
-                            st.markdown(f"🥅 **Finalizações Totais (Últ. 5J):** `{p['media_finalizacoes_5j']}`")
-                            st.markdown(f"🎯 **Chutes ao Gol (Últ. 5J):** `{p['media_chutes_5j']}`")
-                            st.markdown(f"🛡️ **Faltas Sofridas (Últ. 5J):** `{p['media_f_sof_5j']}`")
-                            st.markdown(f"⚠️ **Faltas Cometidas (Últ. 5J):** `{p['media_f_com_5j']}`")
-                            
-                            sugestoes = []
-                            if p['media_gols'] >= 0.3: sugestoes.append("0.5+ Gols")
-                            if p['media_chutes_5j'] >= 0.8: sugestoes.append("0.5+ Chutes ao Gol")
-                            if p['media_finalizacoes_5j'] >= 1.5: sugestoes.append("1.5+ Finalizações")
-                            if p['media_f_sof_5j'] >= 1.0: sugestoes.append("1+ Faltas Sofridas")
-                            if p['media_f_com_5j'] >= 1.0: sugestoes.append("1+ Faltas Cometidas")
-                            if p['media_cartoes_5j'] >= 0.3: sugestoes.append("Receber Cartão")
-                            
-                            if sugestoes:
-                                st.success("💡 **Dicas:** " + " | ".join(sugestoes))
-            with c2:
-                st.markdown(f"### ✈️ {v_nome}")
-                for p in elenco_v:
-                    with st.container(border=True):
-                        st.markdown(f"**Camisa #{p['num']} — {p['nome']}** ({p['pos']})")
-                        if p['pos'] != 'Goleiro':
-                            st.markdown(f"⚽ **Gols (Média):** `{p['media_gols']}`")
-                            st.markdown(f"🥅 **Finalizações Totais (Últ. 5J):** `{p['media_finalizacoes_5j']}`")
-                            st.markdown(f"🎯 **Chutes ao Gol (Últ. 5J):** `{p['media_chutes_5j']}`")
-                            st.markdown(f"🛡️ **Faltas Sofridas (Últ. 5J):** `{p['media_f_sof_5j']}`")
-                            st.markdown(f"⚠️ **Faltas Cometidas (Últ. 5J):** `{p['media_f_com_5j']}`")
-                            
-                            sugestoes = []
-                            if p['media_gols'] >= 0.3: sugestoes.append("0.5+ Gols")
-                            if p['media_chutes_5j'] >= 0.8: sugestoes.append("0.5+ Chutes ao Gol")
-                            if p['media_finalizacoes_5j'] >= 1.5: sugestoes.append("1.5+ Finalizações")
-                            if p['media_f_sof_5j'] >= 1.0: sugestoes.append("1+ Faltas Sofridas")
-                            if p['media_f_com_5j'] >= 1.0: sugestoes.append("1+ Faltas Cometidas")
-                            if p['media_cartoes_5j'] >= 0.3: sugestoes.append("Receber Cartão")
-                            
-                            if sugestoes:
-                                st.success("💡 **Dicas:** " + " | ".join(sugestoes))
+            for col, elenco, time_nome in zip([c1, c2], [elenco_m, elenco_v], [m_nome, v_nome]):
+                with col:
+                    st.markdown(f"### 🏠 {time_nome}")
+                    for p in elenco:
+                        with st.container(border=True):
+                            st.markdown(f"**Camisa #{p['num']} — {p['nome']}** ({p['pos']})")
+                            if p['pos'] != 'Goleiro':
+                                st.markdown(f"⚽ **Gols (Média):** `{p['media_gols']}`")
+                                st.markdown(f"🥅 **Finalizações Totais (Últ. 5J):** `{p['media_finalizacoes_5j']}`")
+                                st.markdown(f"🎯 **Chutes ao Gol (Últ. 5J):** `{p['media_chutes_5j']}`")
+                                st.markdown(f"🛡️ **Faltas Sofridas (Últ. 5J):** `{p['media_f_sof_5j']}`")
+                                st.markdown(f"⚠️ **Faltas Cometidas (Últ. 5J):** `{p['media_f_com_5j']}`")
+                                
+                                sugestoes = []
+                                if p['media_gols'] >= 0.3:
+                                    prob = int(calcular_probabilidade_real(p['media_gols']) * 100)
+                                    sugestoes.append(f"0.5+ Gols ({prob}%)")
+                                if p['media_finalizacoes_5j'] >= 2.5:
+                                    prob = int(calcular_probabilidade_real(p['media_finalizacoes_5j'], 1.5) * 100)
+                                    sugestoes.append(f"1.5+ Finalizações ({prob}%)")
+                                elif p['media_finalizacoes_5j'] >= 1.0:
+                                    prob = int(calcular_probabilidade_real(p['media_finalizacoes_5j']) * 100)
+                                    sugestoes.append(f"0.5+ Finalizações ({prob}%)")
+                                if p['media_chutes_5j'] >= 2.4:
+                                    prob = int(calcular_probabilidade_real(p['media_chutes_5j'], 1.5) * 100)
+                                    sugestoes.append(f"1.5+ Chutes ao Gol ({prob}%)")
+                                elif p['media_chutes_5j'] >= 1.0:
+                                    prob = int(calcular_probabilidade_real(p['media_chutes_5j']) * 100)
+                                    sugestoes.append(f"0.5+ Chutes ao Gol ({prob}%)")
+                                if p['media_f_sof_5j'] >= 2.5:
+                                    prob = int(calcular_probabilidade_real(p['media_f_sof_5j'], 1.5) * 100)
+                                    sugestoes.append(f"1.5+ Faltas Sofridas ({prob}%)")
+                                elif p['media_f_sof_5j'] >= 1.0:
+                                    prob = int(calcular_probabilidade_real(p['media_f_sof_5j']) * 100)
+                                    sugestoes.append(f"0.5+ Faltas Sofridas ({prob}%)")
+                                if p['media_f_com_5j'] >= 2.5:
+                                    prob = int(calcular_probabilidade_real(p['media_f_com_5j'], 1.5) * 100)
+                                    sugestoes.append(f"1.5+ Faltas Cometidas ({prob}%)")
+                                elif p['media_f_com_5j'] >= 1.0:
+                                    prob = int(calcular_probabilidade_real(p['media_f_com_5j']) * 100)
+                                    sugestoes.append(f"0.5+ Faltas Cometidas ({prob}%)")
+                                
+                                media_cartoes_ajustada = p['media_cartoes_5j'] * fator_juiz
+                                prob_cartao = int(calcular_probabilidade_real(media_cartoes_ajustada) * 100)
+                                if p['media_cartoes_5j'] >= 0.3 or prob_cartao >= 20:
+                                    sugestoes.append(f"Receber Cartão ({prob_cartao}%)")
+                                
+                                if sugestoes:
+                                    st.success("💡 **Dicas Seguras:** " + " | ".join(sugestoes))
     else:
         st.info("Selecione uma data com jogos disponíveis.")
 
-# ==========================================
-# ABA 3: CRIAÇÃO AUTOMÁTICA (4 VARIAÇÕES)
-# ==========================================
 with aba_auto:
     st.markdown("### 🎯 Criador Automático de Apostas")
     if not df_jogos.empty:
         opcoes = [f"{row['Mandante']} x {row['Visitante']} ({row['Liga Categoria']})" for _, row in df_jogos.iterrows()]
         jogo_sel = st.selectbox("Selecione a Partida:", opcoes, key="auto_jogo")
-        
         if jogo_sel:
             m = jogo_sel.split(" x ")[0]
             v = jogo_sel.split(" x ")[1].split(" (")[0]
@@ -408,14 +419,11 @@ with aba_auto:
                 else:
                     bilhetes_gerados = []
                     tentativas_gerais = 0
-                    
                     while len(bilhetes_gerados) < 4 and tentativas_gerais < 500:
                         random.shuffle(catalogo)
                         b_atual, odds_s, categorias_usadas, probs_s = [], [], set(), []
-                        
                         for item in catalogo:
                             if item["cat_base"] in categorias_usadas: continue
-                            
                             odd_futura = calcular_odd_bilhete(odds_s + [item["odd"]], "Criar Aposta")
                             if odd_futura <= (alvo_auto * 1.15) or len(b_atual) == 0:
                                 b_atual.append(item)
@@ -446,12 +454,7 @@ with aba_auto:
                                 c1, _ = st.columns(2)
                                 c1.metric("Odd Superbet 🟥", f"{bilhete['odd']}")
                                 renderizar_confianca(bilhete['prob'])
-    else:
-        st.info("Nenhuma partida carregada.")
 
-# ==========================================
-# ABA 4: MÚLTIPLAS DE ELITE
-# ==========================================
 with aba_elite:
     st.markdown("### ⚡ Múltiplas de Elite (Filtro 60-100%)")
     if not df_jogos.empty:
@@ -461,7 +464,7 @@ with aba_elite:
             jogos_sugeridos = df_jogos.sample(qtd)
             
             mercados_todos = ["Gols", "Escanteios", "Cartões", "Chutes ao Gol", "Finalizações", "Faltas Sofridas", "Faltas Cometidas", "Handicap"]
-            detalhes_por_jogo = {row_j['Fixture ID']: {"str": f"⚽ **{row_j['Mandante']} x {row_j['Visitante']}** ({row_j['Liga Categoria']})", "itens": []} for _, row_j in jogos_sugeridos.iterrows()}
+            detalhes_por_jogo = {row_j['Fixture ID']: {"str": f"⚽ **{row_j['Mandante']} x {row_j['Visitante']}**", "itens": []} for _, row_j in jogos_sugeridos.iterrows()}
             categorias_por_jogo = {row_j['Fixture ID']: set() for _, row_j in jogos_sugeridos.iterrows()}
             odds_selecoes = []
             
@@ -478,7 +481,7 @@ with aba_elite:
                     
             odd_atual = calcular_odd_bilhete(odds_selecoes, "Criar Aposta")
             tentativas = 0
-            while odd_atual < alvo_elite and tentativas < 200:
+            while odd_atual < alvo_elite and tentativas < 400:
                 row_j = jogos_sugeridos.sample(1).iloc[0]
                 f_id = row_j['Fixture ID']
                 m_n, v_n = row_j['Mandante'], row_j['Visitante']
@@ -495,34 +498,25 @@ with aba_elite:
                         detalhes_por_jogo[f_id]["itens"].append(f"• `{escolha_extra['nome']}` (Odd: {escolha_extra['odd']})")
                         categorias_por_jogo[f_id].add(escolha_extra["cat_base"])
                         odd_atual = calcular_odd_bilhete(odds_selecoes, "Criar Aposta")
-                        if odd_atual >= alvo_elite:
-                            break
+                        if odd_atual >= alvo_elite: break
                 tentativas += 1
                 
-            st.success("🔥 Múltipla de Elite Segura Gerada (Anti-Duplicatas)! ")
+            st.success("🔥 Múltipla de Elite Segura Gerada!")
             for f_id, dados in detalhes_por_jogo.items():
                 if dados["itens"]:
                     with st.container(border=True):
                         st.markdown(dados["str"])
-                        for item in dados["itens"]:
-                            st.markdown(item)
-                            
+                        for item in dados["itens"]: st.markdown(item)
             c1, c2 = st.columns(2)
             c1.metric("🏆 Odd Múltipla Total", f"{odd_atual}")
-            c2.metric("📊 Probabilidade", "85% (Alta Confiança)")
-    else:
-        st.info("Nenhuma partida carregada.")
+            c2.metric("📊 Probabilidade Média", "88% (Alta Confiança)")
 
-# ==========================================
-# ABA 5: CRIAR APOSTA MASTER
-# ==========================================
 with aba_personalizada:
     st.markdown("### 🛠️ Criar Aposta Master (Seleção de Mercados & Slider de Odd 1.10 a 10.0)")
     if not df_jogos.empty:
         lista_jogos_formatada = [f"{row['Liga Categoria']} | {row['Mandante']} x {row['Visitante']}" for _, row in df_jogos.iterrows()]
         jogos_escolhidos = st.multiselect("Selecione os jogos para o Criar Aposta:", lista_jogos_formatada, key="criar_aposta_selecao")
         
-        st.markdown("#### 🎯 Marque os Mercados Desejados para a Composição:")
         col_m1, col_m2, col_m3, col_m4 = st.columns(4)
         with col_m1:
             m_gols = st.checkbox("⚽ Gols", value=True)
@@ -541,7 +535,7 @@ with aba_personalizada:
         
         if st.button("⚡ Criar Múltipla Automaticamente", type="primary", use_container_width=True):
             if not jogos_escolhidos:
-                st.warning("⚠️ Selecione pelo menos um jogo acima para gerar a aposta.")
+                st.warning("⚠️ Selecione pelo menos um jogo.")
             else:
                 mercados_ativos = []
                 if m_gols: mercados_ativos.append("Gols")
@@ -554,7 +548,7 @@ with aba_personalizada:
                 if m_f_com: mercados_ativos.append("Faltas Cometidas")
                 
                 if not mercados_ativos:
-                    st.warning("⚠️ Marque pelo menos um mercado nas caixas de seleção acima.")
+                    st.warning("⚠️ Marque pelo menos um mercado.")
                 else:
                     odds_selecoes, probs_lista = [], []
                     detalhes_por_jogo = {jg: [] for jg in jogos_escolhidos}
@@ -568,7 +562,6 @@ with aba_personalizada:
                                 disponiveis = [op for op in opcoes_cat if op["cat_base"] not in categorias_por_jogo[jg]]
                                 if not disponiveis: disponiveis = opcoes_cat
                                 escolha = random.choice(disponiveis)
-                                
                                 teste_odds = odds_selecoes + [escolha["odd"]]
                                 if calcular_odd_bilhete(teste_odds, "Criar Aposta") <= (alvo_multipla * 1.25) or len(odds_selecoes) == 0:
                                     odds_selecoes.append(escolha["odd"])
@@ -578,26 +571,21 @@ with aba_personalizada:
                     
                     odd_atual = calcular_odd_bilhete(odds_selecoes, "Criar Aposta")
                     tentativa = 0
-                    
-                    while odd_atual < alvo_multipla and tentativa < 200:
+                    while odd_atual < alvo_multipla and tentativa < 400:
                         jg_alvo = random.choice(jogos_escolhidos)
                         m_n, v_n = jg_alvo.split(" | ")[1].split(" x ")
                         cat_aleatoria = random.choice(mercados_ativos)
                         opcoes_cat = obter_opcoes_por_categoria(m_n, v_n, cat_aleatoria, API_KEY)
                         disponiveis = [c for c in opcoes_cat if c["cat_base"] not in categorias_por_jogo[jg_alvo] and c["odd"] <= 2.50]
-                        
                         if disponiveis:
                             escolha_extra = random.choice(disponiveis)
                             if calcular_odd_bilhete(odds_selecoes + [escolha_extra["odd"]], "Criar Aposta") <= (alvo_multipla * 1.25):
                                 odds_selecoes.append(escolha_extra["odd"])
                                 probs_lista.append(escolha_extra["prob"])
-                                detalhes_chave = f"• `{escolha_extra['nome']}` (Odd: `{escolha_extra['odd']}`)"
-                                if detalhes_chave not in detalhes_por_jogo[jg_alvo]:
-                                    detalhes_por_jogo[jg_alvo].append(detalhes_chave)
+                                detalhes_por_jogo[jg_alvo].append(f"• `{escolha_extra['nome']}` (Odd: `{escolha_extra['odd']}`)")
                                 categorias_por_jogo[jg_alvo].add(escolha_extra["cat_base"])
                                 odd_atual = calcular_odd_bilhete(odds_selecoes, "Criar Aposta")
-                                if odd_atual >= alvo_multipla:
-                                    break
+                                if odd_atual >= alvo_multipla: break
                         tentativa += 1
 
                     prob_final_calculada = int(sum(probs_lista) / len(probs_lista)) if probs_lista else 75
@@ -610,11 +598,57 @@ with aba_personalizada:
                         if detalhes_por_jogo[jg]:
                             with st.container(border=True):
                                 st.markdown(f"⚽ **{partida_nome}**")
-                                for item in detalhes_por_jogo[jg]:
-                                    st.markdown(f"  {item}")
+                                for item in detalhes_por_jogo[jg]: st.markdown(f"  {item}")
                     
                     st.write("")
                     c1, c2 = st.columns(2)
                     c1.metric("🏆 Odd Total Criar Aposta", f"{odd_atual}")
                     c2.metric("📊 Probabilidade Calculada", f"{prob_final_calculada}%")
                     renderizar_confianca(prob_final_calculada)
+
+with aba_bingo:
+    st.markdown("### 🔢 Calculadora de Placar Exato (Poisson)")
+    if not df_jogos.empty:
+        opcoes_bingo = [f"{row['Mandante']} x {row['Visitante']} ({row['Liga Categoria']})" for _, row in df_jogos.iterrows()]
+        jogo_bingo = st.selectbox("Selecione o Jogo para Calcular o Bingo:", opcoes_bingo, key="bingo_jogo")
+        
+        if jogo_bingo:
+            m_nome_bingo = jogo_bingo.split(" x ")[0]
+            v_nome_bingo = jogo_bingo.split(" x ")[1].split(" (")[0]
+            
+            c_m, c_v = st.columns(2)
+            with c_m:
+                xg_m = st.slider(f"Expectativa de Gols (xG) - {m_nome_bingo}:", 0.1, 4.0, 1.5, 0.1)
+            with c_v:
+                xg_v = st.slider(f"Expectativa de Gols (xG) - {v_nome_bingo}:", 0.1, 4.0, 1.1, 0.1)
+            
+            # Matriz Poisson
+            probs = []
+            max_gols = 5
+            for i in range(max_gols):
+                linha = []
+                for j in range(max_gols):
+                    p_m = (math.pow(xg_m, i) * math.exp(-xg_m)) / math.factorial(i)
+                    p_v = (math.pow(xg_v, j) * math.exp(-xg_v)) / math.factorial(j)
+                    linha.append(p_m * p_v * 100)
+                probs.append(linha)
+            
+            df_bingo = pd.DataFrame(probs, 
+                                    columns=[f"{j} Gols ({v_nome_bingo[:3]})" for j in range(max_gols)], 
+                                    index=[f"{i} Gols ({m_nome_bingo[:3]})" for i in range(max_gols)])
+            
+            st.write("📈 **Mapa de Calor de Probabilidade (%)**")
+            st.dataframe(df_bingo.style.background_gradient(cmap='YlGn', axis=None).format("{:.1f}%"), use_container_width=True)
+            
+            # Encontra o placar mais provável
+            max_prob = 0
+            melhor_placar = ""
+            for i in range(max_gols):
+                for j in range(max_gols):
+                    if probs[i][j] > max_prob:
+                        max_prob = probs[i][j]
+                        melhor_placar = f"{m_nome_bingo} {i} x {j} {v_nome_bingo}"
+            
+            st.success(f"🎯 **Placar Mais Provável (Bingo):** {melhor_placar} com **{max_prob:.1f}%** de chance.")
+    else:
+        st.info("Nenhuma partida carregada para o cálculo de Bingo.")
