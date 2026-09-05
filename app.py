@@ -618,4 +618,3 @@ with aba_personalizada:
                     c1.metric("🏆 Odd Total Criar Aposta", f"{odd_atual}")
                     c2.metric("📊 Probabilidade Calculada", f"{prob_final_calculada}%")
                     renderizar_confianca(prob_final_calculada)
-[/source]
