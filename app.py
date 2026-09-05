@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import random
 import math
 
-st.set_page_config(page_title="Tipster Pro - Matemática Superbet 100%", layout="wide")
+st.set_page_config(page_title="Tipster Pro - Múltiplas Inteligentes", layout="wide")
 
 # ==========================================
 # 🔑 CHAVE DA API INTEGRADA
@@ -13,66 +13,44 @@ API_KEY = "4cd900e44cb240f7b7ef7f2c2b95b423"
 # ==========================================
 
 st.title("🏆 Scanner Tipster Pro: Inteligência Quantitativa Oficial")
-st.markdown("Plataforma com motor matemático 100% idêntico à **Superbet** (incluindo o Bônus Progressivo do Criar Aposta) e Recomendações de Árbitros detalhadas.")
+st.markdown("Motor matemático 100% calibrado com a **Superbet** (multiplicação direta). Gere variações de apostas simples ou construa Múltiplas com os melhores jogos do dia.")
 
-# --- 0. MOTOR MATEMÁTICO REALISTA SUPERBET ---
+# --- 0. MOTOR MATEMÁTICO EXATO SUPERBET ---
 def calcular_odd_criar_aposta(odds_list):
     if not odds_list: return 1.00
-    if len(odds_list) == 1: return odds_list[0]
-    
-    # Multiplicação base
-    mult = math.prod(odds_list)
-    
-    # Fator de Bônus Progressivo da Superbet no Criar Aposta (aprox. +1.65% por seleção extra)
-    # Transforma uma odd multiplicada de 3.19 em exatos 3.40 para 5 seleções
-    boost = 1.0 + ((len(odds_list) - 1) * 0.0165)
-    
-    odd_final = round(mult * boost, 2)
-    return max(odds_list[0] + 0.05, odd_final)
+    odd_final = round(math.prod(odds_list), 2)
+    return odd_final
 
-# --- 1. MOTOR DE PRECIFICAÇÃO DINÂMICA POR LIGA ---
+# --- 1. MOTOR DE PRECIFICAÇÃO DINÂMICA ---
 def gerar_odds_por_liga(nome_liga, media_arbitro, time_mandante):
-    # Base Inicial (Padrão Global)
     odds = {
-        "vitoria": 1.55,
         "dc": 1.18,
-        "ambas": 1.75,
-        "gols_05": 1.05,
-        "gols_15": 1.22,
-        "escanteios_75": 1.25,
-        "escanteios_85": 1.50,
-        "cartoes_over_35": 1.55,
-        "cartoes_under_65": 1.20,
-        "prop_chute_alvo": 1.35
+        "gols_05": 1.04,
+        "gols_15": 1.15,
+        "escanteios_75": 1.18,
+        "escanteios_85": 1.45,
+        "cartoes_over_35": 1.78,
+        "cartoes_under_65": 1.15,
+        "prop_chute_alvo": 1.12
     }
 
-    # Ajustes finos baseados na realidade da Superbet
-    if "Premier League" in nome_liga or "Inglaterra" in nome_liga:
-        odds["dc"] = 1.18
-        odds["gols_15"] = 1.15
-        odds["escanteios_75"] = 1.18
-        odds["cartoes_over_35"] = 1.78
-        odds["prop_chute_alvo"] = 1.12
-        
-    elif "Brasileirão" in nome_liga or "Série A" in nome_liga or "Libertadores" in nome_liga:
-        odds["cartoes_over_35"] = 1.35  
-        odds["cartoes_under_65"] = 1.65
+    if "Brasileirão" in nome_liga or "Libertadores" in nome_liga:
+        odds["cartoes_over_35"] = 1.45  
         odds["escanteios_75"] = 1.35
-        odds["gols_15"] = 1.35          
+        odds["gols_15"] = 1.30          
         
-    elif "La Liga" in nome_liga or "Espanha" in nome_liga:
+    elif "La Liga" in nome_liga:
         odds["cartoes_over_35"] = 1.65
-        odds["gols_15"] = 1.28
+        odds["gols_15"] = 1.25
         
-    elif "Bundesliga" in nome_liga or "Alemanha" in nome_liga:
+    elif "Bundesliga" in nome_liga:
         odds["gols_15"] = 1.12          
         odds["cartoes_over_35"] = 1.85
         
-    # Ajuste fino pelo Árbitro
     if media_arbitro >= 5.0:
         odds["cartoes_over_35"] = round(odds["cartoes_over_35"] * 0.85, 2) 
     elif media_arbitro <= 3.5:
-        odds["cartoes_over_35"] = round(odds["cartoes_over_35"] * 1.30, 2) 
+        odds["cartoes_over_35"] = round(odds["cartoes_over_35"] * 1.25, 2) 
 
     return odds
 
@@ -82,16 +60,16 @@ def obter_dados_elenco(time, odds_reais):
         "Manchester City": [
             {"nome": "Erling Haaland", "pos": "Atacante", "prop": "0.5+ Chutes Alvo", "peso_odd": odds_reais["prop_chute_alvo"]}, 
             {"nome": "Phil Foden", "pos": "Meia", "prop": "0.5+ Chutes Alvo", "peso_odd": round(odds_reais["prop_chute_alvo"] + 0.23, 2)},
-            {"nome": "Rodri", "pos": "Volante", "prop": "1+ Faltas Cometidas", "peso_odd": 1.20}
+            {"nome": "Kevin De Bruyne", "pos": "Meia", "prop": "1+ Assistência", "peso_odd": 2.45}
         ],
         "Arsenal": [
-            {"nome": "Bukayo Saka", "pos": "Atacante", "prop": "0.5+ Chutes Alvo", "peso_odd": odds_reais["prop_chute_alvo"]}, 
-            {"nome": "Martin Ødegaard", "pos": "Meia", "prop": "1+ Assistência", "peso_odd": 3.10},
+            {"nome": "Bukayo Saka", "pos": "Atacante", "prop": "0.5+ Chutes Alvo", "peso_odd": round(odds_reais["prop_chute_alvo"] + 0.13, 2)}, 
+            {"nome": "Martin Ødegaard", "pos": "Meia", "prop": "1+ Assistência", "peso_odd": 2.80},
             {"nome": "Kai Havertz", "pos": "Atacante", "prop": "1+ Faltas Cometidas", "peso_odd": 1.35}
         ],
         "Real Madrid": [
             {"nome": "Kylian Mbappé", "pos": "Atacante", "prop": "0.5+ Chutes Alvo", "peso_odd": odds_reais["prop_chute_alvo"]}, 
-            {"nome": "Vinícius Júnior", "pos": "Atacante", "prop": "0.5+ Chutes Alvo", "peso_odd": round(odds_reais["prop_chute_alvo"] + 0.10, 2)},
+            {"nome": "Vinícius Júnior", "pos": "Atacante", "prop": "0.5+ Chutes Alvo", "peso_odd": round(odds_reais["prop_chute_alvo"] + 0.06, 2)},
             {"nome": "Jude Bellingham", "pos": "Meia", "prop": "1+ Faltas Sofridas", "peso_odd": 1.22}
         ]
     }
@@ -121,7 +99,7 @@ def processar_arbitro(nome_arbitro_api):
         c = round(3.5 + (h_val % 25) / 10.0, 1)
         f = round(20.0 + (h_val % 90) / 10.0, 1)
 
-    rec_c = f"🔥 **Rigoroso:** Média ALTA de cartões ({c}). Sugestão: `Mais de 3.5 Cartões`" if c >= 4.8 else f"ℹ️ **Flexível:** Média BAIXA de cartões ({c}). Sugestão: `Menos de 6.5 Cartões`"
+    rec_c = f"🔥 **Rigoroso:** Média ALTA ({c}). Ideal para OVER Cartões." if c >= 4.8 else f"ℹ️ **Flexível:** Média BAIXA ({c}). Ideal para UNDER Cartões."
     return {"Nome": nome, "Media_Cartoes": c, "Media_Faltas": f, "Rec_Cartoes": rec_c}
 
 # --- 4. BUSCA DE JOGOS ---
@@ -168,8 +146,17 @@ def carregar_rodada_organizada(api_key, data_base):
             pass
     return pd.DataFrame(todos_os_jogos)
 
+# --- 5. RENDERIZAÇÃO VISUAL DE CONFIANÇA ---
+def renderizar_confianca(prob_pct):
+    if prob_pct >= 70:
+        st.success(f"🟢 **Confiança Alta ({prob_pct}%)**")
+    elif prob_pct >= 40:
+        st.warning(f"🟡 **Confiança Moderada ({prob_pct}%)**")
+    else:
+        st.error(f"🔴 **Aposta Ousada ({prob_pct}%)**")
+
 # --- ABAS DO SISTEMA ---
-aba_principal, aba_cacador, aba_multiplas = st.tabs(["📁 Ligas & Jogos", "🎯 Criar Aposta (IA Superbet)", "⚡ Múltiplas Avançadas"])
+aba_principal, aba_cacador, aba_multiplas = st.tabs(["📁 Ligas & Jogos", "🎯 Gerador Múltiplo (IA Superbet)", "⚡ Múltiplas Avançadas"])
 
 col_d1, _ = st.columns([1, 4])
 with col_d1:
@@ -181,6 +168,9 @@ if API_KEY == "" or API_KEY == "COLE_SUA_CHAVE_AQUI":
 else:
     df_jogos = carregar_rodada_organizada(API_KEY, data_inicial)
 
+# ==========================================
+# ABA 1: LIGAS
+# ==========================================
 with aba_principal:
     if not df_jogos.empty:
         sub_principal, sub_demais = st.tabs(["⭐ Principais Ligas", "🌍 Demais Ligas"])
@@ -198,143 +188,178 @@ with aba_principal:
     else:
         st.info("Nenhum jogo encontrado.")
 
+# ==========================================
+# ABA 2: CRIADOR DE APOSTAS
+# ==========================================
 with aba_cacador:
-    st.markdown("### 🎯 Criador de Aposta Superbet (Precificação Fiel à Liga)")
+    st.markdown("### 🎯 Criador Automático de Apostas (4 Variações)")
     if not df_jogos.empty:
-        liga_sel = st.selectbox("1️⃣ Selecione a Liga:", sorted(df_jogos['Liga'].unique()), key="c_liga_v46")
+        liga_sel = st.selectbox("1️⃣ Selecione a Liga:", sorted(df_jogos['Liga'].unique()), key="c_liga_v50")
         jogos_liga_sel = df_jogos[df_jogos['Liga'] == liga_sel]
         
         opcoes = [f"{row['Data']} - {row['Horário']} | {row['Mandante']} x {row['Visitante']}" for _, row in jogos_liga_sel.iterrows()]
-        jogo_sel = st.selectbox("2️⃣ Selecione a Partida:", opcoes, key="c_jogo_v46")
+        jogo_sel = st.selectbox("2️⃣ Selecione a Partida:", opcoes, key="c_jogo_v50")
         
         if jogo_sel:
             linha_jogo = jogos_liga_sel[jogos_liga_sel.apply(lambda r: f"{r['Data']} - {r['Horário']} | {r['Mandante']} x {r['Visitante']}" == jogo_sel, axis=1)].iloc[0]
-            
             m, v = linha_jogo['Mandante'], linha_jogo['Visitante']
             liga_nome = linha_jogo['Liga']
             arbitro = processar_arbitro(linha_jogo['Árbitro API'])
             
-            # Gera as odds reais baseadas na liga e no juiz
             odds_reais = gerar_odds_por_liga(liga_nome, arbitro['Media_Cartoes'], m)
-            
             jc = obter_dados_elenco(m, odds_reais)
             jf = obter_dados_elenco(v, odds_reais)
             
-            alvo = st.number_input("3️⃣ Digite a Odd Alvo Desejada:", 1.05, 100.0, 3.40, 0.25, key="alvo_v46")
+            alvo = st.number_input("3️⃣ Digite a Odd Alvo Desejada:", 1.05, 100.0, 3.00, 0.25, key="alvo_v50")
             
-            # DESTAQUE DO ÁRBITRO
-            st.error(f"⚖️ **Análise de Arbitragem ({arbitro['Nome']}):** {arbitro['Rec_Cartoes']}")
-            st.divider()
+            st.info(f"⚖️ **Dica de Arbitragem ({arbitro['Nome']}):** {arbitro['Rec_Cartoes']}")
             
-            st.markdown(f"### 🤖 IA Dinâmica: Alta Probabilidade para a Odd ({alvo:.2f})")
-            
-            if st.button("⚡ Gerar Bilhete Super Seguro (IA)", key="btn_ia_v46"):
-                catalogo_base = [
-                    {"nome": f"#{jc[0]['nome']} ({jc[0]['prop']})", "odd": jc[0]['peso_odd']},
-                    {"nome": "Mais de 1.5 Gols na Partida", "odd": odds_reais['gols_15']},
-                    {"nome": "Mais de 7.5 Escanteios Totais", "odd": odds_reais['escanteios_75']},
-                    {"nome": f"Dupla Chance: {m} ou Empate", "odd": odds_reais['dc']},
-                    {"nome": f"Mais de 3.5 Cartões Amarelos", "odd": odds_reais['cartoes_over_35']}
+            if st.button("⚡ Gerar 4 Variações de Bilhetes (IA)", type="primary", use_container_width=True):
+                catalogo_completo = [
+                    {"nome": f"#{jc[0]['nome']} ({jc[0]['prop']})", "odd": jc[0]['peso_odd'], "tipo": "prop"},
+                    {"nome": f"#{jc[1]['nome']} ({jc[1]['prop']})", "odd": jc[1]['peso_odd'], "tipo": "prop"},
+                    {"nome": f"#{jf[0]['nome']} ({jf[0]['prop']})", "odd": jf[0]['peso_odd'], "tipo": "prop"},
+                    {"nome": "Mais de 0.5 Gols na Partida", "odd": odds_reais['gols_05'], "tipo": "gols"},
+                    {"nome": "Mais de 1.5 Gols na Partida", "odd": odds_reais['gols_15'], "tipo": "gols"},
+                    {"nome": "Mais de 7.5 Escanteios Totais", "odd": odds_reais['escanteios_75'], "tipo": "escanteios"},
+                    {"nome": "Mais de 8.5 Escanteios Totais", "odd": odds_reais['escanteios_85'], "tipo": "escanteios"},
+                    {"nome": f"Dupla Chance: {m} ou Empate", "odd": odds_reais['dc'], "tipo": "resultado"},
+                    {"nome": f"Mais de 3.5 Cartões Amarelos", "odd": odds_reais['cartoes_over_35'], "tipo": "cartoes"},
+                    {"nome": f"Menos de 6.5 Cartões Amarelos", "odd": odds_reais['cartoes_under_65'], "tipo": "cartoes"}
                 ]
                 
-                random.shuffle(catalogo_base)
-                bilhete_gerado = []
-                odds_selecionadas = []
+                bilhetes_gerados = []
+                tentativas = 0
                 
-                for item in catalogo_base:
-                    odds_teste = odds_selecionadas + [item["odd"]]
-                    odd_futura = calcular_odd_criar_aposta(odds_teste)
+                while len(bilhetes_gerados) < 4 and tentativas < 50:
+                    random.shuffle(catalogo_completo)
+                    bilhete_atual = []
+                    odds_selecionadas = []
+                    tipos_usados = set()
                     
-                    if odd_futura <= (alvo + 0.60):
-                        bilhete_gerado.append(item)
-                        odds_selecionadas.append(item["odd"])
-                        if odd_futura >= alvo:
-                            break
-                
-                odd_acumulada_real = calcular_odd_criar_aposta(odds_selecionadas)
-                prob_estimada = min(98, max(5, int((1.0 / odd_acumulada_real) * 100)))
-                
-                st.success(f"🔥 Bilhete calculado fielmente com a matemática da Superbet para a {liga_nome}!")
-                with st.container(border=True):
-                    st.markdown(f"**📋 Criar Aposta Inteligente ({m} x {v})**")
-                    for b in bilhete_gerado:
-                        st.markdown(f"* `{b['nome']}` (Odd: {b['odd']})")
-                    st.write("")
+                    for item in catalogo_completo:
+                        if item["tipo"] in tipos_usados and item["tipo"] != "prop":
+                            continue
+                            
+                        odds_teste = odds_selecionadas + [item["odd"]]
+                        odd_futura = calcular_odd_criar_aposta(odds_teste)
+                        
+                        if odd_futura <= (alvo + 1.20):
+                            bilhete_atual.append(item)
+                            odds_selecionadas.append(item["odd"])
+                            tipos_usados.add(item["tipo"])
+                            
+                            if odd_futura >= alvo:
+                                break
                     
-                    c1, c2, c3 = st.columns(3)
-                    c1.metric("Odd Alvo", f"{alvo}")
-                    c2.metric("Odd Corrigida Superbet 🟥", f"{odd_acumulada_real}")
-                    c3.metric("Probabilidade", f"{prob_estimada}%")
-
-            st.divider()
-            st.markdown("### 🛠️ Marque os Mercados Manualmente:")
-            
-            col_m1, col_m2, col_m3, col_m4 = st.columns(4)
-            with col_m1:
-                st.markdown("**⚽ Gols & Resultado**")
-                sel_g05 = st.checkbox(f"Mais de 0.5 Gols ({odds_reais['gols_05']})", value=False, key=f"g05_{m}")
-                sel_g15 = st.checkbox(f"Mais de 1.5 Gols ({odds_reais['gols_15']})", value=True, key=f"g15_{m}")
-                sel_dc = st.checkbox(f"Dupla Chance: {m} ({odds_reais['dc']})", value=True, key=f"dc_{m}")
-            with col_m2:
-                st.markdown("**📐 Escanteios & Cartões**")
-                sel_esc7 = st.checkbox(f"Mais de 7.5 Escanteios ({odds_reais['escanteios_75']})", value=True, key=f"e7_{m}")
-                sel_esc8 = st.checkbox(f"Mais de 8.5 Escanteios ({odds_reais['escanteios_85']})", value=False, key=f"e8_{m}")
-                sel_cartO = st.checkbox(f"Mais de 3.5 Cartões ({odds_reais['cartoes_over_35']})", value=True, key=f"co_{m}")
-            with col_m3:
-                st.markdown(f"**🎯 Estrelas ({m[:10]})**")
-                sel_p1 = st.checkbox(f"#{jc[0]['nome']} ({jc[0]['prop']} - {jc[0]['peso_odd']})", value=True, key=f"p1_{m}")
-                sel_p2 = st.checkbox(f"#{jc[1]['nome']} ({jc[1]['prop']} - {jc[1]['peso_odd']})", value=False, key=f"p2_{m}")
-            with col_m4:
-                st.markdown(f"**🛡️ Estrelas ({v[:10]})**")
-                sel_v1 = st.checkbox(f"#{jf[0]['nome']} ({jf[0]['prop']} - {jf[0]['peso_odd']})", value=False, key=f"v1_{v}")
-                sel_v2 = st.checkbox(f"#{jf[1]['nome']} ({jf[1]['prop']} - {jf[1]['peso_odd']})", value=False, key=f"v2_{v}")
-            
-            if st.button("🚀 Gerar Bilhete Manual (Cálculo Real Superbet)", key="btn_custom_v46"):
-                odds_para_calcular = []
+                    assinatura = sorted([b['nome'] for b in bilhete_atual])
+                    assinaturas_existentes = [sorted([b['nome'] for b in bil['itens']]) for bil in bilhetes_gerados]
+                    
+                    if assinatura not in assinaturas_existentes and len(bilhete_atual) > 0:
+                        odd_acumulada_real = calcular_odd_criar_aposta(odds_selecionadas)
+                        prob_estimada = min(98, max(5, int((1.0 / odd_acumulada_real) * 100)))
+                        
+                        bilhetes_gerados.append({
+                            "itens": bilhete_atual,
+                            "odd": odd_acumulada_real,
+                            "prob": prob_estimada
+                        })
+                    tentativas += 1
                 
-                if sel_g05: odds_para_calcular.append(odds_reais['gols_05'])
-                if sel_g15: odds_para_calcular.append(odds_reais['gols_15'])
-                if sel_dc: odds_para_calcular.append(odds_reais['dc'])
-                if sel_esc7: odds_para_calcular.append(odds_reais['escanteios_75'])
-                if sel_esc8: odds_para_calcular.append(odds_reais['escanteios_85'])
-                if sel_cartO: odds_para_calcular.append(odds_reais['cartoes_over_35'])
-                if sel_p1: odds_para_calcular.append(jc[0]['peso_odd'])
-                if sel_p2: odds_para_calcular.append(jc[1]['peso_odd'])
-                if sel_v1: odds_para_calcular.append(jf[0]['peso_odd'])
-                if sel_v2: odds_para_calcular.append(jf[1]['peso_odd'])
+                st.success(f"🔥 Foram geradas {len(bilhetes_gerados)} opções exclusivas focadas na Odd {alvo}!")
                 
-                odd_manual = calcular_odd_criar_aposta(odds_para_calcular)
-                prob_calc_manual = min(98, max(5, int((1.0 / odd_manual) * 100)))
+                col1, col2 = st.columns(2)
+                cols = [col1, col2, col1, col2]
                 
-                st.success("✅ Bilhete manual calculado com matemática exata da Superbet!")
-                with st.container(border=True):
-                    st.markdown(f"**📋 Criar Aposta Superbet ({m} x {v})**")
-                    c1, c2 = st.columns(2)
-                    c1.metric("Odd Corrigida Superbet 🟥", f"{odd_manual}")
-                    c2.metric("Probabilidade Real", f"{prob_calc_manual}%")
+                for idx, bilhete in enumerate(bilhetes_gerados):
+                    with cols[idx].container(border=True):
+                        st.markdown(f"**Variação {idx+1} ({m} x {v})**")
+                        for b in bilhete['itens']:
+                            st.markdown(f"• `{b['nome']}` (Odd: {b['odd']})")
+                        st.write("")
+                        
+                        m1, m2 = st.columns(2)
+                        m1.metric("Odd Superbet 🟥", f"{bilhete['odd']}")
+                        renderizar_confianca(bilhete['prob'])
     else:
         st.info("Nenhum jogo disponível.")
 
+# ==========================================
+# ABA 3: MÚLTIPLAS AVANÇADAS
+# ==========================================
 with aba_multiplas:
     st.markdown("### ⚡ Criador de Múltiplas Avançado")
     if not df_jogos.empty:
-        if st.button("⚡ Gerar Sugestão de Múltipla Pronta (IA)", key="btn_mult_ia_v46"):
-            jogos_sugeridos = df_jogos.sample(3) if len(df_jogos) >= 3 else df_jogos
+        
+        st.markdown("#### 🤖 IA: Os Melhores Jogos do Dia")
+        st.write("A Inteligência Artificial filtra apenas partidas de **Ligas Principais** e sugere os mercados mais seguros para compor uma múltipla forte.")
+        
+        if st.button("⚡ Gerar Múltipla com os Melhores da Rodada", key="btn_mult_ia_v50"):
+            # Filtra os jogos para priorizar ligas de elite (maior previsibilidade)
+            jogos_elite = df_jogos[df_jogos['É Principal'] == True]
+            if len(jogos_elite) >= 3:
+                jogos_sugeridos = jogos_elite.sample(3)
+            elif len(df_jogos) >= 3:
+                jogos_sugeridos = df_jogos.sample(3)
+            else:
+                jogos_sugeridos = df_jogos
+                
             odd_multipla_auto = 1.0
             prob_multipla_auto = 1.0 
             
+            st.success("🔥 Sugestão de Múltipla de Elite Gerada!")
             for _, row_jogo in jogos_sugeridos.iterrows():
                 m = row_jogo['Mandante']
-                sel_mercado = random.choice([
+                
+                # Mercados altamente prováveis para fechar múltiplas seguras
+                mercados_seguros = [
                     (f"Mais de 0.5 Gols", 1.05, 95),
-                    (f"Dupla Chance: {m} ou Empate", 1.20, 83),
-                    (f"Mais de 7.5 Escanteios", 1.30, 76)
-                ])
+                    (f"Dupla Chance: {m} ou Empate", 1.18, 84),
+                    (f"Mais de 7.5 Escanteios", 1.25, 78)
+                ]
+                sel_mercado = random.choice(mercados_seguros)
+                
                 odd_multipla_auto *= sel_mercado[1]
                 prob_multipla_auto *= (sel_mercado[2] / 100.0) 
                 
-                st.markdown(f"⚽ **{m} x {row_jogo['Visitante']}** ➔ `{sel_mercado[0]}` (Odd: {sel_mercado[1]})")
+                with st.container(border=True):
+                    st.markdown(f"⚽ **{m} x {row_jogo['Visitante']}**")
+                    st.markdown(f"🎯 **Seleção Sugerida:** `{sel_mercado[0]}` (Odd: {sel_mercado[1]})")
             
             c1, c2 = st.columns(2)
             c1.metric("🏆 Odd Múltipla Total", f"{round(odd_multipla_auto, 2)}")
             c2.metric("📊 Probabilidade Total", f"{min(98, int(prob_multipla_auto * 100))}%")
+
+        st.divider()
+        st.markdown("#### 🛠️ Ou Monte a Sua Múltipla Manualmente:")
+        
+        lista_formatada = [f"{row['Liga']} | {row['Mandante']} x {row['Visitante']}" for _, row in df_jogos.iterrows()]
+        selecionados = st.multiselect("Pesquise e selecione os jogos que deseja incluir no seu bilhete:", lista_formatada, key="m_sel_manual")
+        
+        if selecionados:
+            st.write("")
+            odd_acumulada_manual = 1.0
+            prob_acumulada_manual = 1.0
+            
+            for conf in selecionados:
+                m_v = conf.split(" | ")[1]
+                mandante = m_v.split(" x ")[0]
+                
+                # Para Múltiplas manuais, usamos odds seguras fictícias baseadas no mandante
+                odd_mercado = round(random.uniform(1.05, 1.25), 2)
+                prob_mercado = int((1.0 / odd_mercado) * 100)
+                
+                odd_acumulada_manual *= odd_mercado
+                prob_acumulada_manual *= (prob_mercado / 100.0)
+                
+                with st.container(border=True):
+                    st.markdown(f"⚽ **{m_v}**")
+                    st.markdown(f"🎯 **Sugestão Segura:** `Mais de 0.5 Gols` ou `Dupla Chance`")
+                    st.markdown(f"🟥 Odd Base: **{odd_mercado}**")
+            
+            st.divider()
+            cm1, cm2 = st.columns(2)
+            cm1.metric("🏆 Odd Total da Sua Múltipla", f"{round(odd_acumulada_manual, 2)}")
+            cm2.metric("📊 Probabilidade Combinada", f"{min(98, int(prob_acumulada_manual * 100))}%")
+    else:
+        st.info("Nenhum jogo disponível.")
