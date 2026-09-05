@@ -128,7 +128,6 @@ def obter_elenco_api_real(time_nome, api_key):
         if key.lower() in time_nome.lower() or time_nome.lower() in key.lower():
             return banco_elencos[key]
 
-    # Gerador dinâmico robusto com força ofensiva baseada no nome do time (Ex: City tem xG alto)
     is_elite = any(t in time_nome.lower() for t in ["city", "real", "bayern", "barcelona", "arsenal", "liverpool", "flamengo", "palmeiras"])
     gols_base = 0.6 if is_elite else 0.35
     
@@ -243,7 +242,7 @@ with aba_dossie:
             v_nome = j_sel.split(" x ")[1].split(" (")[0]
             match_row = df_jogos[df_jogos['Mandante'] == m_nome].iloc[0]
             info_juiz = processar_arbitro_e_cartoes(match_row['Árbitro API'])
-            st.info(f"⚖️ **Árbitro:** {info_juiz['Nome']} | 🟨 **Média:** {info_juiz['Media_Cartões']} cartões/jogo")
+            st.info(f"⚖️ **Árbitro:** {info_juiz['Nome']} | 🟨 **Média:** {info_juiz['Media_Cartoes']} cartões/jogo")
             st.divider()
             
             elenco_m = obter_elenco_api_real(m_nome, API_KEY)
@@ -299,7 +298,6 @@ with aba_bingo:
             elenco_m = obter_elenco_api_real(m_nome_bingo, API_KEY)
             elenco_v = obter_elenco_api_real(v_nome_bingo, API_KEY)
             
-            # xG Calibrado por força ofensiva de elenco e favoritismo real
             elite_times = ["manchester city", "real madrid", "bayern", "barcelona", "arsenal", "liverpool", "flamengo", "palmeiras", "são paulo"]
             is_m_elite = any(t in m_nome_bingo.lower() for t in elite_times)
             is_v_elite = any(t in v_nome_bingo.lower() for t in elite_times)
@@ -312,7 +310,6 @@ with aba_bingo:
             
             st.info(f"📊 **Expectativa de Gols (xG):** **{m_nome_bingo}** ({xg_m}) x ({xg_v}) **{v_nome_bingo}**")
             
-            # Matriz de Poisson
             probs = []
             max_gols = 6
             for i in range(max_gols):
@@ -330,8 +327,6 @@ with aba_bingo:
             st.write("📈 **Mapa de Calor de Probabilidade (%)**")
             st.dataframe(df_bingo.style.background_gradient(cmap='YlGn', axis=None).format("{:.1f}%"), use_container_width=True)
             
-            # Ranking de Placares Detalhados
-            st.markdown("### 🏆 Ranking dos Placares Mais Prováveis")
             ranking_placares = []
             for i in range(max_gols):
                 for j in range(max_gols):
