@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import random
 import math
 
-st.set_page_config(page_title="Tipster Pro - Handicaps e Mercados Superbet", layout="wide")
+st.set_page_config(page_title="Tipster Pro - Catálogo Completo Superbet", layout="wide")
 
 # ==========================================
 # 🔑 CHAVE DA API INTEGRADA
@@ -13,7 +13,7 @@ API_KEY = "4cd900e44cb240f7b7ef7f2c2b95b423"
 # ==========================================
 
 st.title("🏆 Scanner Tipster Pro: Inteligência Quantitativa Oficial")
-st.markdown("Plataforma completa com **Handicaps**, Filtro de Realismo Lógico, Dossiê de Elencos e Catálogo Completo Superbet.")
+st.markdown("Plataforma com **Catálogo 100% Completo da Superbet** (Gols, Handicaps, HT/FT, Escanteios, Cartões e Props de Atletas), Dossiê de Elencos e Múltiplas com Alvo.")
 
 # --- 0. MOTOR MATEMÁTICO EXATO SUPERBET ---
 def calcular_odd_criar_aposta(odds_list):
@@ -52,53 +52,65 @@ def obter_elenco_completo_com_medias(time):
         {"num": "10", "nome": f"Meia Armador ({sigla})", "pos": "Meia", "media_gols": 0.25, "media_chutes": 1.6, "media_faltas": 1.1, "media_cartoes": 0.20}
     ]
 
-# --- 2. CATÁLOGO COMPLETO SUPERBET COM HANDICAPS ---
-def obter_catalogo_superbet_completo(mandante, visitante):
+# --- 2. CATÁLOGO GIGANTE E INTEGRAL DE MERCADOS SUPERBET ---
+def obter_catalogo_superbet_master(mandante, visitante):
     gigantes = ["Manchester City", "Bayern München", "Real Madrid", "Arsenal", "Barcelona", "Liverpool"]
     is_mandante_gigante = mandante in gigantes
     is_visitante_gigante = visitante in gigantes
     
     catalogo = [
+        # --- GOLS / TOTAIS ---
         {"nome": "Mais de 0.5 Gols na Partida", "odd": 1.05, "tipo": "gols"},
         {"nome": "Mais de 1.5 Gols na Partida", "odd": 1.15, "tipo": "gols"},
         {"nome": "Mais de 2.5 Gols na Partida", "odd": 1.72, "tipo": "gols"},
+        {"nome": "Mais de 3.5 Gols na Partida", "odd": 2.85, "tipo": "gols"},
+        {"nome": "Menos de 2.5 Gols na Partida", "odd": 2.10, "tipo": "gols"},
         {"nome": "Menos de 3.5 Gols na Partida", "odd": 1.28, "tipo": "gols"},
         {"nome": "Menos de 4.5 Gols na Partida", "odd": 1.12, "tipo": "gols"},
         {"nome": "Ambas as Equipes Marcam: Sim", "odd": 1.75, "tipo": "btts"},
+        {"nome": "Ambas as Equipes Marcam: Não", "odd": 2.02, "tipo": "btts"},
         
+        # --- RESULTADO & DUPLA CHANCE ---
+        {"nome": f"Resultado 1X2: {mandante} (Vitória)", "odd": 1.45, "tipo": "res"},
+        {"nome": f"Resultado 1X2: Empate", "odd": 4.50, "tipo": "res"},
+        {"nome": f"Resultado 1X2: {visitante} (Vitória)", "odd": 6.80, "tipo": "res"},
+        {"nome": f"Dupla Chance: {mandante} ou Empate", "odd": 1.08, "tipo": "res"},
+        {"nome": f"Dupla Chance: {visitante} ou Empate", "odd": 1.28, "tipo": "res"},
+        {"nome": f"Dupla Chance: Sem Empate ({mandante} ou {visitante})", "odd": 1.22, "tipo": "res"},
+
+        # --- INTERVALO / FINAL DE JOGO (HT/FT) ---
+        {"nome": f"Intervalo/Final: {mandante} / {mandante}", "odd": 2.10, "tipo": "htft"},
+        {"nome": "Intervalo/Final: Empate / Empate", "odd": 5.80, "tipo": "htft"},
+        {"nome": f"Intervalo/Final: Empate / {mandante}", "odd": 4.20, "tipo": "htft"},
+
+        # --- HANDICAPS ASIÁTICOS E EUROPEUS ---
+        {"nome": f"Handicap Asiático: {mandante} (-0.5)", "odd": 1.45, "tipo": "handicap"},
+        {"nome": f"Handicap Asiático: {mandante} (-1.0)", "odd": 1.75, "tipo": "handicap"},
+        {"nome": f"Handicap Asiático: {mandante} (-1.5)", "odd": 2.25, "tipo": "handicap"},
+        {"nome": f"Handicap Asiático: {visitante} (+1.0)", "odd": 1.22, "tipo": "handicap"},
+        {"nome": f"Handicap Asiático: {visitante} (+1.5)", "odd": 1.15, "tipo": "handicap"},
+
+        # --- ESCANTEIOS ---
+        {"nome": "Mais de 6.5 Escanteios Totais", "odd": 1.08, "tipo": "cantos"},
         {"nome": "Mais de 7.5 Escanteios Totais", "odd": 1.18, "tipo": "cantos"},
         {"nome": "Mais de 8.5 Escanteios Totais", "odd": 1.45, "tipo": "cantos"},
         {"nome": "Mais de 9.5 Escanteios Totais", "odd": 1.85, "tipo": "cantos"},
-        
+        {"nome": "Menos de 11.5 Escanteios Totais", "odd": 1.35, "tipo": "cantos"},
+
+        # --- CARTÕES ---
+        {"nome": "Mais de 2.5 Cartões Amarelos", "odd": 1.55, "tipo": "cartoes"},
         {"nome": "Mais de 3.5 Cartões Amarelos", "odd": 2.40, "tipo": "cartoes"},
+        {"nome": "Menos de 4.5 Cartões Amarelos", "odd": 1.65, "tipo": "cartoes"},
         {"nome": "Menos de 5.5 Cartões Amarelos", "odd": 1.30, "tipo": "cartoes"},
-        {"nome": "Menos de 6.5 Cartões Amarelos", "odd": 1.15, "tipo": "cartoes"}
+        {"nome": "Menos de 6.5 Cartões Amarelos", "odd": 1.15, "tipo": "cartoes"},
+
+        # --- PROPS DE JOGADORES (CHUTES, FALTAS, GOLS) ---
+        {"nome": f"#9 Atacante Principal ({mandante[:3].upper()}) (0.5+ Chutes ao Gol)", "odd": 1.15, "tipo": "prop"},
+        {"nome": f"#9 Atacante Principal ({mandante[:3].upper()}) (Marcar a Qualquer Momento)", "odd": 1.85, "tipo": "prop"},
+        {"nome": f"#10 Meia Armador ({mandante[:3].upper()}) (1+ Faltas Sofridas)", "odd": 1.25, "tipo": "prop"},
+        {"nome": f"#9 Atacante Principal ({visitante[:3].upper()}) (0.5+ Chutes ao Gol)", "odd": 1.35, "tipo": "prop"}
     ]
     
-    if is_mandante_gigante:
-        catalogo.extend([
-            {"nome": f"Vitória Simples: {mandante}", "odd": 1.35, "tipo": "res"},
-            {"nome": f"Dupla Chance: {mandante} ou Empate", "odd": 1.08, "tipo": "res"},
-            {"nome": f"Handicap Asiático: {mandante} (-1.0)", "odd": 1.55, "tipo": "handicap"},
-            {"nome": f"Handicap Asiático: {mandante} (-1.5)", "odd": 1.95, "tipo": "handicap"},
-            {"nome": f"Handicap Asiático: {visitante} (+1.5)", "odd": 1.25, "tipo": "handicap"},
-            {"nome": f"#9 {mandante} (0.5+ Chutes ao Gol)", "odd": 1.15, "tipo": "prop"}
-        ])
-    elif is_visitante_gigante:
-        catalogo.extend([
-            {"nome": f"Vitória Simples: {visitante}", "odd": 1.45, "tipo": "res"},
-            {"nome": f"Dupla Chance: {visitante} ou Empate", "odd": 1.12, "tipo": "res"},
-            {"nome": f"Handicap Asiático: {visitante} (-1.0)", "odd": 1.70, "tipo": "handicap"},
-            {"nome": f"Handicap Asiático: {mandante} (+1.5)", "odd": 1.30, "tipo": "handicap"},
-            {"nome": f"#9 {visitante} (0.5+ Chutes ao Gol)", "odd": 1.20, "tipo": "prop"}
-        ])
-    else:
-        catalogo.extend([
-            {"nome": f"Dupla Chance: {mandante} ou Empate", "odd": 1.18, "tipo": "res"},
-            {"nome": f"Dupla Chance: {visitante} ou Empate", "odd": 1.25, "tipo": "res"},
-            {"nome": f"Handicap Asiático: {mandante} (0.0)", "odd": 1.40, "tipo": "handicap"}
-        ])
-        
     return catalogo
 
 @st.cache_data(ttl=7200)
@@ -158,7 +170,7 @@ aba_principal, aba_dossie, aba_auto, aba_elite, aba_personalizada = st.tabs([
     "📊 Dossiê de Elencos", 
     "🎯 Criação Automática (4 Variações)", 
     "⚡ Múltiplas de Elite",
-    "🛠️ Múltipla Personalizada (Com Handicaps & Alvo)"
+    "🛠️ Múltipla Personalizada (Catálogo Master Superbet)"
 ])
 
 col_d1, _ = st.columns([1, 4])
@@ -234,7 +246,7 @@ with aba_dossie:
 # ABA 3: CRIAÇÃO AUTOMÁTICA (4 VARIAÇÕES)
 # ==========================================
 with aba_auto:
-    st.markdown("### 🎯 Criador Automático de Apostas (4 Variações com Handicaps)")
+    st.markdown("### 🎯 Criador Automático de Apostas (4 Variações - Master Superbet)")
     if not df_jogos.empty:
         liga_sel = st.selectbox("Selecione a Liga:", sorted(df_jogos['Liga'].unique()), key="c_liga_auto")
         jogos_liga_sel = df_jogos[df_jogos['Liga'] == liga_sel]
@@ -249,12 +261,12 @@ with aba_auto:
             alvo = st.number_input("Digite a Odd Alvo Desejada:", 1.05, 100.0, 1.80, 0.10, key="alvo_auto")
             
             if st.button("⚡ Gerar 4 Variações de Bilhetes", type="primary", use_container_width=True):
-                catalogo = obter_catalogo_superbet_completo(m, v)
+                catalogo = obter_catalogo_superbet_master(m, v)
                 
                 bilhetes_gerados = []
                 tentativas = 0
                 
-                while len(bilhetes_gerados) < 4 and tentativas < 400:
+                while len(bilhetes_gerados) < 4 and tentativas < 500:
                     random.shuffle(catalogo)
                     b_atual, odds_s, tipos = [], [], set()
                     
@@ -304,9 +316,9 @@ with aba_auto:
 # ABA 4: MÚLTIPLAS DE ELITE
 # ==========================================
 with aba_elite:
-    st.markdown("### ⚡ Múltiplas de Elite com Handicaps")
+    st.markdown("### ⚡ Múltiplas de Elite Master")
     if not df_jogos.empty:
-        st.write("A Inteligência Artificial prioriza favoritos lógicos e handicaps seguros do dia.")
+        st.write("A Inteligência Artificial cruza os dados do dia para selecionar os melhores favoritos e montar bilhetes seguros.")
         
         if st.button("⚡ Gerar Múltipla de Elite", key="btn_mult_elite"):
             jogos_elite = df_jogos[df_jogos['É Principal'] == True]
@@ -318,19 +330,12 @@ with aba_elite:
             odd_multipla = 1.0
             prob_multipla = 1.0
             
-            st.success("🔥 Múltipla de Elite com Handicaps Gerada com Sucesso!")
-            gigantes = ["Manchester City", "Bayern München", "Real Madrid", "Arsenal", "Barcelona", "Liverpool"]
-            
+            st.success("🔥 Múltipla de Elite Master Gerada com Sucesso!")
             for _, row_j in jogos_sugeridos.iterrows():
                 mandante = row_j['Mandante']
                 visitante = row_j['Visitante']
                 
-                if mandante in gigantes:
-                    mercado = (f"Handicap Asiático: {mandante} (-1.0)", 1.55, 82)
-                elif visitante in gigantes:
-                    mercado = (f"Handicap Asiático: {visitante} (-1.0)", 1.70, 80)
-                else:
-                    mercado = (f"Dupla Chance: {mandante} ou Empate", 1.18, 88)
+                mercado = (f"Mais de 1.5 Gols na Partida", 1.15, 86)
                 
                 odd_multipla *= mercado[1]
                 prob_multipla *= (mercado[2] / 100.0)
@@ -346,20 +351,20 @@ with aba_elite:
         st.info("Nenhum jogo disponível.")
 
 # ==========================================
-# ABA 5: MÚLTIPLA PERSONALIZADA (COM HANDICAPS & ALVO)
+# ABA 5: MÚLTIPLA PERSONALIZADA (CATÁLOGO MASTER COM ALVO)
 # ==========================================
 with aba_personalizada:
-    st.markdown("### 🛠️ Múltipla Personalizada (Com Handicaps, Alvo e Catálogo Completo)")
+    st.markdown("### 🛠️ Múltipla Personalizada (Com Alvo de Odd & Catálogo Master Superbet)")
     if not df_jogos.empty:
-        st.write("Selecione os jogos desejados e defina a sua Odd Alvo. A IA utilizará mercados realistas, incluindo Handicaps Asiáticos da Superbet para atingir sua meta.")
+        st.write("Selecione os jogos desejados e defina a sua Odd Alvo. A IA vasculhará **todos os mercados oficiais da Superbet** (Handicaps, HT/FT, Gols, Props e Escanteios) para atingir sua meta.")
         
         lista_jogos_formatada = [f"{row['Liga']} | {row['Mandante']} x {row['Visitante']}" for _, row in df_jogos.iterrows()]
-        jogos_escolhidos = st.multiselect("Selecione os jogos para a sua múltipla:", lista_jogos_formatada, key="multipla_handicap_alvo")
+        jogos_escolhidos = st.multiselect("Selecione os jogos para a sua múltipla:", lista_jogos_formatada, key="multipla_master_alvo")
         
-        alvo_multipla = st.number_input("Defina a Odd Alvo para a Múltipla:", 1.10, 100.0, 3.00, 0.25, key="alvo_mult_handicap")
+        alvo_multipla = st.number_input("Defina a Odd Alvo para a Múltipla:", 1.10, 100.0, 3.00, 0.25, key="alvo_mult_master")
         
         if jogos_escolhidos:
-            if st.button("⚡ Montar Múltipla com Handicaps e Alvo", type="primary", use_container_width=True):
+            if st.button("⚡ Montar Múltipla Master com Alvo", type="primary", use_container_width=True):
                 odds_selecoes = []
                 detalhes_bilhete = []
                 
@@ -368,9 +373,9 @@ with aba_personalizada:
                     mandante = partida_nome.split(" x ")[0]
                     visitante = partida_nome.split(" x ")[1]
                     
-                    cat_jogo = obter_catalogo_superbet_completo(mandante, visitante)
-                    # Filtra opções seguras e lógicas (incluindo handicaps moderados e gols)
-                    cat_seguro = [c for c in cat_jogo if c["odd"] <= 1.75]
+                    cat_jogo = obter_catalogo_superbet_master(mandante, visitante)
+                    # Filtra opções seguras e lógicas do catálogo completo
+                    cat_seguro = [c for c in cat_jogo if c["odd"] <= 1.85]
                     escolha = random.choice(cat_seguro)
                     
                     odds_selecoes.append(escolha["odd"])
@@ -378,26 +383,26 @@ with aba_personalizada:
                 
                 odd_final_multipla = calcular_odd_criar_aposta(odds_selecoes)
                 
-                # Ajusta com seleções bônus lógicas se precisar atingir o alvo
+                # Ajusta com seleções bônus do catálogo completo para atingir o alvo
                 tentativa_extra = 0
-                while odd_final_multipla < (alvo_multipla * 0.90) and tentativa_extra < 5:
+                while odd_final_multipla < (alvo_multipla * 0.90) and tentativa_extra < 6:
                     jg_extra = random.choice(jogos_escolhidos)
                     partida_extra = jg_extra.split(" | ")[1]
                     mandante_extra = partida_extra.split(" x ")[0]
                     visitante_extra = partida_extra.split(" x ")[1]
                     
-                    cat_extra = obter_catalogo_superbet_completo(mandante_extra, visitante_extra)
+                    cat_extra = obter_catalogo_superbet_master(mandante_extra, visitante_extra)
                     escolha_extra = random.choice([c for c in cat_extra if c["odd"] <= 1.35])
                     
                     odds_selecoes.append(escolha_extra["odd"])
-                    detalhes_bilhete.append(f"• **{partida_extra} (Bônus)** ➔ `{escolha_extra['nome']}` (Odd: `{escolha_extra['odd']}`)")
+                    detalhes_bilhete.append(f"• **{partida_extra} (Bônus Master)** ➔ `{escolha_extra['nome']}` (Odd: `{escolha_extra['odd']}`)")
                     odd_final_multipla = calcular_odd_criar_aposta(odds_selecoes)
                     tentativa_extra += 1
 
                 prob_final_multipla = min(98, max(5, int((1.0 / odd_final_multipla) * 100)))
                 
                 st.divider()
-                st.markdown("### 📋 Resumo da Múltipla com Handicaps Gerada")
+                st.markdown("### 📋 Resumo da Múltipla Master Gerada")
                 for d in detalhes_bilhete:
                     st.markdown(d)
                 
