@@ -13,9 +13,9 @@ API_KEY = "4cd900e44cb240f7b7ef7f2c2b95b423"
 # ==========================================
 
 st.title("🏆 Scanner Tipster Pro: Inteligência Quantitativa Oficial")
-st.markdown("Plataforma com **Motor Superbet Oficial**, Elencos Atualizados, Controle de Odds Alvo e Planilha de Bingo por Poisson.")
+st.markdown("Plataforma com **Motor Superbet Oficial**, Divisão Estatística Casa x Fora, Controle de Odds Alvo e Planilha de Bingo por Poisson.")
 
-# --- 0. MOTOR MATEMÁTICO SUPERBET ---
+# --- 0. MOTOR MATEMÁTICO SUPERBET COM SPLIT CASA/FORA ---
 def calcular_probabilidade_real(media_base, linha=0.5):
     if media_base <= 0.1: return 0.01
     fator_live = random.uniform(0.95, 1.05)
@@ -153,16 +153,42 @@ def obter_elenco_api_real(time_nome, api_key):
         {"num": "10", "nome": "Meia Armador", "pos": "Meia", "media_gols": 0.3, "media_finalizacoes_5j": 2.7, "media_chutes_5j": 1.2, "media_f_sof_5j": 2.5, "media_f_com_5j": 1.3, "media_cartoes_5j": 0.3}
     ]
 
+def calcular_xg_casa_fora(time_nome, is_mandante, elenco):
+    gols_lista = [p.get("media_gols", 0) for p in elenco if p.get("pos") in ["Atacante", "Meia"]]
+    base = sum(gols_lista) / max(1, len(gols_lista)) * 2.5 if gols_lista else 1.0
+    
+    # Split Estatístico Casa x Fora
+    fator_split = 1.18 if is_mandante else 0.85 
+    
+    elite_times = ["manchester city", "real madrid", "bayern", "barcelona", "arsenal", "liverpool", "flamengo", "palmeiras", "são paulo", "inter", "napoli", "schalke 04"]
+    if any(t in time_nome.lower() for t in elite_times):
+        base = max(base, 1.5 if is_mandante else 1.1)
+        
+    return round(min(max(base * fator_split, 0.4), 3.2), 2)
+
 def obter_opcoes_por_categoria(mandante, visitante, categoria, api_key):
     itens = []
     if categoria == "Gols":
-        itens.extend([{"nome": "Mais de 0.5 Gols na Partida", "odd": 1.05, "tipo": "gols_05", "cat_base": "gols", "prob": 95}, {"nome": "Mais de 1.5 Gols na Partida", "odd": 1.25, "tipo": "gols_15", "cat_base": "gols", "prob": 82}, {"nome": "Mais de 2.5 Gols na Partida", "odd": 1.85, "tipo": "gols_25", "cat_base": "gols", "prob": 65}])
+        itens.extend([
+            {"nome": "Mais de 0.5 Gols na Partida", "odd": 1.06, "tipo": "gols_05", "cat_base": "gols", "prob": 95}, 
+            {"nome": "Mais de 1.5 Gols na Partida", "odd": 1.35, "tipo": "gols_15", "cat_base": "gols", "prob": 82}, 
+            {"nome": "Mais de 2.5 Gols na Partida", "odd": 2.05, "tipo": "gols_25", "cat_base": "gols", "prob": 65}
+        ])
     elif categoria == "Escanteios":
-        itens.extend([{"nome": "Mais de 5.5 Escanteios Totais", "odd": 1.10, "tipo": "cantos_55", "cat_base": "cantos", "prob": 90}, {"nome": "Mais de 7.5 Escanteios Totais", "odd": 1.30, "tipo": "cantos_75", "cat_base": "cantos", "prob": 78}, {"nome": "Mais de 9.5 Escanteios Totais", "odd": 1.85, "tipo": "cantos_95", "cat_base": "cantos", "prob": 62}])
+        itens.extend([
+            {"nome": "Mais de 7.5 Escanteios Totais", "odd": 1.25, "tipo": "cantos_75", "cat_base": "cantos", "prob": 78}, 
+            {"nome": "Mais de 9.5 Escanteios Totais", "odd": 1.75, "tipo": "cantos_95", "cat_base": "cantos", "prob": 62}
+        ])
     elif categoria == "Cartões":
-        itens.extend([{"nome": "Mais de 1.5 Cartões Amarelos", "odd": 1.12, "tipo": "cartoes_15", "cat_base": "cartoes", "prob": 92}, {"nome": "Mais de 3.5 Cartões Amarelos", "odd": 1.65, "tipo": "cartoes_35", "cat_base": "cartoes", "prob": 74}])
+        itens.extend([
+            {"nome": "Mais de 1.5 Cartões Amarelos", "odd": 1.20, "tipo": "cartoes_15", "cat_base": "cartoes", "prob": 92}, 
+            {"nome": "Mais de 3.5 Cartões Amarelos", "odd": 1.75, "tipo": "cartoes_35", "cat_base": "cartoes", "prob": 74}
+        ])
     elif categoria == "Handicap":
-        itens.extend([{"nome": f"Dupla Chance: {mandante} ou Empate", "odd": 1.15, "tipo": "dc_m", "cat_base": "resultado", "prob": 85}, {"nome": f"Dupla Chance: {visitante} ou Empate", "odd": 1.25, "tipo": "dc_v", "cat_base": "resultado", "prob": 80}])
+        itens.extend([
+            {"nome": f"Dupla Chance: {mandante} ou Empate", "odd": 1.18, "tipo": "dc_m", "cat_base": "resultado", "prob": 85}, 
+            {"nome": f"Dupla Chance: {visitante} ou Empate", "odd": 1.28, "tipo": "dc_v", "cat_base": "resultado", "prob": 80}
+        ])
     else:
         for time_nome in [mandante, visitante]:
             elenco = obter_elenco_api_real(time_nome, api_key)
@@ -367,11 +393,11 @@ with aba_personalizada:
             m_cartoes = st.checkbox("🟨 Cartões", value=True)
             m_chutes = st.checkbox("🎯 Chutes ao Gol", value=True)
         with col_m3:
-            m_finalizacoes = st.checkbox("🔥 Finalizações", value=True)
-            m_handicap = st.checkbox("⚖️ Handicap", value=True)
+            m_finalizacoes = st.checkbox("🔥 Finalizações", value=False)
+            m_handicap = st.checkbox("⚖️ Handicap", value=False)
         with col_m4:
-            m_f_sof = st.checkbox("🛡️ Faltas Sofridas", value=True)
-            m_f_com = st.checkbox("⚠️ Faltas Cometidas", value=True)
+            m_f_sof = st.checkbox("🛡️ Faltas Sofridas", value=False)
+            m_f_com = st.checkbox("⚠️ Faltas Cometidas", value=False)
             
         alvo_multipla = st.slider("Selecione a Odd Alvo para o Bilhete:", 1.10, 10.0, 3.00, 0.10, key="master_alvo")
         
@@ -391,20 +417,27 @@ with aba_personalizada:
                 
                 odds_selecoes, probs_lista, detalhes_por_jogo = [], [], {jg: [] for jg in jogos_escolhidos}
                 
-                # Garante que CADA jogo selecionado receba exatamente 1 ou 2 mercados para aparecer no bilhete
+                # Coleta seleções variadas de cada jogo selecionado para formar uma múltipla real equilibrada
                 for jg in jogos_escolhidos:
                     m_n, v_n = jg.split(" | ")[1].split(" x ")
-                    mercados_disponiveis_jogo = [cat for cat in mercados_ativos]
-                    random.shuffle(mercados_disponiveis_jogo)
+                    mercados_disponiveis = [c for c in mercados_ativos]
+                    random.shuffle(mercados_disponiveis)
                     
-                    for cat_m in mercados_disponiveis_jogo[:2]: # Pega até 2 mercados por jogo
+                    itens_jogo = 0
+                    for cat_m in mercados_disponiveis:
+                        if itens_jogo >= 1: break # 1 mercado forte por jogo para controlar a odd total
                         opcoes_cat = obter_opcoes_por_categoria(m_n, v_n, cat_m, API_KEY)
                         if opcoes_cat:
-                            escolha = random.choice(opcoes_cat)
-                            odds_selecoes.append(escolha["odd"])
-                            probs_lista.append(escolha["prob"])
-                            detalhes_por_jogo[jg].append(f"• `{escolha['nome']}` (Odd: `{escolha['odd']}`)")
-                            break # Uma seleção por jogo garante que todos apareçam
+                            # Filtra opções com odds intermediárias/altas para evitar travar em 1.05
+                            opcoes_filtradas = [op for op in opcoes_cat if op['odd'] >= 1.15]
+                            if not opcoes_filtradas: opcoes_filtradas = opcoes_cat
+                            
+                            escolha = random.choice(opcoes_filtradas)
+                            if escolha['tipo'] not in [item.get('tipo') for item in odds_selecoes]:
+                                odds_selecoes.append(escolha['odd'])
+                                probs_lista.append(escolha['prob'])
+                                detalhes_por_jogo[jg].append(f"• `{escolha['nome']}` (Odd: `{escolha['odd']}`)")
+                                itens_jogo += 1
                 
                 odd_atual = calcular_odd_bilhete(odds_selecoes, "Criar Aposta")
                 prob_final = int(sum(probs_lista) / len(probs_lista)) if probs_lista else 75
@@ -426,7 +459,7 @@ with aba_personalizada:
         st.info("Nenhuma partida carregada.")
 
 with aba_bingo:
-    st.markdown("### 🔢 Calculadora de Placar Exato (Poisson Realista)")
+    st.markdown("### 🔢 Calculadora de Placar Exato (Poisson Realista Casa x Fora)")
     if not df_jogos.empty:
         opcoes_bingo = [f"{row['Mandante']} x {row['Visitante']} ({row['Liga Categoria']})" for _, row in df_jogos.iterrows()]
         jogo_bingo = st.selectbox("Selecione o Jogo para o Bingo:", opcoes_bingo, key="bingo_jogo")
@@ -438,17 +471,11 @@ with aba_bingo:
             elenco_m = obter_elenco_api_real(m_nome_bingo, API_KEY)
             elenco_v = obter_elenco_api_real(v_nome_bingo, API_KEY)
             
-            elite_times = ["manchester city", "real madrid", "bayern", "barcelona", "arsenal", "liverpool", "flamengo", "palmeiras", "são paulo", "inter", "napoli", "schalke 04"]
-            is_m_elite = any(t in m_nome_bingo.lower() for t in elite_times)
-            is_v_elite = any(t in v_nome_bingo.lower() for t in elite_times)
+            # Cálculo de xG aplicando a nova divisão analítica de Casa vs Fora
+            xg_m = calcular_xg_casa_fora(m_nome_bingo, is_mandante=True, elenco=elenco_m)
+            xg_v = calcular_xg_casa_fora(v_nome_bingo, is_mandante=False, elenco=elenco_v)
             
-            xg_m_base = sum(p.get("media_gols", 0) for p in elenco_m) if elenco_m else 1.2
-            xg_v_base = sum(p.get("media_gols", 0) for p in elenco_v) if elenco_v else 1.0
-            
-            xg_m = round(min(max(xg_m_base * (2.4 if is_m_elite else 1.6), 1.4 if is_m_elite else 0.8), 3.2), 2)
-            xg_v = round(min(max(xg_v_base * (2.0 if is_v_elite else 1.3), 1.1 if is_v_elite else 0.5), 2.5), 2)
-            
-            st.info(f"📊 **Expectativa de Gols (xG):** **{m_nome_bingo}** ({xg_m}) x ({xg_v}) **{v_nome_bingo}**")
+            st.info(f"📊 **Expectativa de Gols (xG com Split Casa/Fora):** **{m_nome_bingo} (Mandante)** [{xg_m}] x [{xg_v}] **{v_nome_bingo} (Visitante)**")
             
             probs = []
             max_gols = 6
