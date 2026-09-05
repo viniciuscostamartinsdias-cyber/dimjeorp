@@ -187,7 +187,7 @@ def obter_opcoes_por_categoria(mandante, visitante, categoria, api_key):
     elif categoria == "Handicap":
         itens.extend([
             {"nome": f"Dupla Chance: {mandante} ou Empate", "odd": 1.18, "tipo": "dc_m", "cat_base": "resultado", "prob": 85}, 
-            {"nome": f"Dupla Chance: {visitante} ou Empate", "odd": 1.28, "tipo": "dc_v", "cat_base": "resultado", "prob": 80}
+            {"nome": f"Dupla Chance: {visitante} ou Empate", "odd": 1.30, "tipo": "dc_v", "cat_base": "resultado", "prob": 80}
         ])
     else:
         for time_nome in [mandante, visitante]:
@@ -415,9 +415,9 @@ with aba_personalizada:
                 if m_f_sof: mercados_ativos.append("Faltas Sofridas")
                 if m_f_com: mercados_ativos.append("Faltas Cometidas")
                 
-                odds_selecoes, probs_lista, detalhes_por_jogo = [], [], {jg: [] for jg in jogos_escolhidos}
+                odds_selecoes, probs_lista, tipos_usados, detalhes_por_jogo = [], [], set(), {jg: [] for jg in jogos_escolhidos}
                 
-                # Coleta seleções variadas de cada jogo selecionado para formar uma múltipla real equilibrada
+                # Distribui mercados variados entre os jogos selecionados para formar uma múltipla real equilibrada
                 for jg in jogos_escolhidos:
                     m_n, v_n = jg.split(" | ")[1].split(" x ")
                     mercados_disponiveis = [c for c in mercados_ativos]
@@ -425,19 +425,19 @@ with aba_personalizada:
                     
                     itens_jogo = 0
                     for cat_m in mercados_disponiveis:
-                        if itens_jogo >= 1: break # 1 mercado forte por jogo para controlar a odd total
+                        if itens_jogo >= 1: break 
                         opcoes_cat = obter_opcoes_por_categoria(m_n, v_n, cat_m, API_KEY)
                         if opcoes_cat:
-                            # Filtra opções com odds intermediárias/altas para evitar travar em 1.05
-                            opcoes_filtradas = [op for op in opcoes_cat if op['odd'] >= 1.15]
+                            opcoes_filtradas = [op for op in opcoes_cat if op['odd'] >= 1.15 and op['tipo'] not in tipos_usados]
+                            if not opcoes_filtradas: opcoes_filtradas = [op for op in opcoes_cat if op['tipo'] not in tipos_usados]
                             if not opcoes_filtradas: opcoes_filtradas = opcoes_cat
                             
                             escolha = random.choice(opcoes_filtradas)
-                            if escolha['tipo'] not in [item.get('tipo') for item in odds_selecoes]:
-                                odds_selecoes.append(escolha['odd'])
-                                probs_lista.append(escolha['prob'])
-                                detalhes_por_jogo[jg].append(f"• `{escolha['nome']}` (Odd: `{escolha['odd']}`)")
-                                itens_jogo += 1
+                            odds_selecoes.append(escolha['odd'])
+                            probs_lista.append(escolha['prob'])
+                            tipos_usados.add(escolha['tipo'])
+                            detalhes_por_jogo[jg].append(f"• `{escolha['nome']}` (Odd: `{escolha['odd']}`)")
+                            itens_jogo += 1
                 
                 odd_atual = calcular_odd_bilhete(odds_selecoes, "Criar Aposta")
                 prob_final = int(sum(probs_lista) / len(probs_lista)) if probs_lista else 75
@@ -471,7 +471,6 @@ with aba_bingo:
             elenco_m = obter_elenco_api_real(m_nome_bingo, API_KEY)
             elenco_v = obter_elenco_api_real(v_nome_bingo, API_KEY)
             
-            # Cálculo de xG aplicando a nova divisão analítica de Casa vs Fora
             xg_m = calcular_xg_casa_fora(m_nome_bingo, is_mandante=True, elenco=elenco_m)
             xg_v = calcular_xg_casa_fora(v_nome_bingo, is_mandante=False, elenco=elenco_v)
             
