@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import random
 import math
 
-st.set_page_config(page_title="Tipster Pro - Filtros de Mercado & Faltas Cometidas", layout="wide")
+st.set_page_config(page_title="Tipster Pro - Criar Aposta Master Completo", layout="wide")
 
 # ==========================================
 # 🔑 CHAVE DA API INTEGRADA
@@ -13,7 +13,7 @@ API_KEY = "4cd900e44cb240f7b7ef7f2c2b95b423"
 # ==========================================
 
 st.title("🏆 Scanner Tipster Pro: Inteligência Quantitativa Oficial")
-st.markdown("Plataforma com **Filtros Avançados de Mercado (Gols, Escanteios, Cartões, Chutes, Finalizações, Handicaps, Faltas Sofridas e Cometidas)**, Slider de Odd (1.10 a 10.0), Escalações Reais e Assertividade 60-100%.")
+st.markdown("Plataforma com **Inclusão Obrigatória de Mercados Marcados**, Slider de Odd (1.10 a 10.0), Escalações Reais e Assertividade 60-100%.")
 
 # --- 0. MOTOR MATEMÁTICO EXATO SUPERBET ---
 def calcular_odd_criar_aposta(odds_list):
@@ -64,29 +64,22 @@ def processar_arbitro_e_cartoes(nome_arbitro_api):
 # --- 3. BASE DE ELENCOS E ESCALAÇÕES OFICIAIS (ÚLTIMAS 5 PARTIDAS) ---
 def obter_elenco_completo_com_medias(time_nome):
     banco_elencos = {
+        "Manchester City": [
+            {"num": "9", "nome": "Erling Haaland", "pos": "Atacante", "media_gols": 0.95, "ultimas_5_chutes": [4, 5, 3, 4, 5], "ult.5_faltas_sofridas": [2, 3, 2, 3, 4], "ult.5_faltas_cometidas": [1, 0, 1, 1, 0]},
+            {"num": "10", "nome": "Kevin De Bruyne", "pos": "Meia", "media_gols": 0.40, "ultimas_5_chutes": [3, 2, 3, 2, 3], "ult.5_faltas_sofridas": [3, 4, 3, 3, 4], "ult.5_faltas_cometidas": [1, 1, 1, 0, 1]}
+        ],
+        "Coventry City": [
+            {"num": "9", "nome": "Ellis Simms", "pos": "Atacante", "media_gols": 0.40, "ultimas_5_chutes": [2, 3, 2, 3, 2], "ult.5_faltas_sofridas": [3, 2, 3, 4, 2], "ult.5_faltas_cometidas": [2, 2, 1, 2, 2]}
+        ],
         "Bragantino": [
             {"num": "18", "nome": "T. Volpi", "pos": "Goleiro", "media_gols": 0.0, "ultimas_5_chutes": [0,0,0,0,0], "ult.5_faltas_sofridas": [0,0,0,0,0], "ult.5_faltas_cometidas": [0,0,0,0,0]},
             {"num": "29", "nome": "J. Capixaba", "pos": "Lateral", "media_gols": 0.15, "ultimas_5_chutes": [1,2,1,2,1], "ult.5_faltas_sofridas": [2,2,3,2,2], "ult.5_faltas_cometidas": [1,1,2,1,1]},
-            {"num": "20", "nome": "Rodriguinho", "pos": "Meia", "media_gols": 0.30, "ultimas_5_chutes": [2,1,2,2,3], "ult.5_faltas_sofridas": [2,3,3,2,3], "ult.5_faltas_cometidas": [1,2,1,1,2]},
-            {"num": "17", "nome": "Vinicinho", "pos": "Atacante", "media_gols": 0.40, "ultimas_5_chutes": [2,3,2,3,3], "ult.5_faltas_sofridas": [3,2,3,3,4], "ult.5_faltas_cometidas": [1,1,1,2,1]},
-            {"num": "9", "nome": "I. Pitta", "pos": "Atacante", "media_gols": 0.65, "ultimas_5_chutes": [3,4,3,4,3], "ult.5_faltas_sofridas": [3,3,4,3,3], "ult.5_faltas_cometidas": [2,3,2,2,3]}
+            {"num": "17", "nome": "Vinicinho", "pos": "Atacante", "media_gols": 0.40, "ultimas_5_chutes": [2,3,2,3,3], "ult.5_faltas_sofridas": [3,2,3,3,4], "ult.5_faltas_cometidas": [1,1,1,2,1]}
         ],
         "Bahia": [
             {"num": "1", "nome": "Ronaldo", "pos": "Goleiro", "media_gols": 0.0, "ultimas_5_chutes": [0,0,0,0,0], "ult.5_faltas_sofridas": [0,0,0,0,0], "ult.5_faltas_cometidas": [0,0,0,0,0]},
-            {"num": "46", "nome": "L. Juba", "pos": "Lateral", "media_gols": 0.20, "ultimas_5_chutes": [2,1,2,1,2], "ult.5_faltas_sofridas": [2,2,1,2,2], "ult.5_faltas_cometidas": [1,1,0,1,1]},
             {"num": "5", "nome": "N. Acevedo", "pos": "Volante", "media_gols": 0.10, "ultimas_5_chutes": [1,0,1,1,0], "ult.5_faltas_sofridas": [1,1,2,1,1], "ult.5_faltas_cometidas": [3,4,3,4,3]},
-            {"num": "16", "nome": "E. Pulga", "pos": "Atacante", "media_gols": 0.35, "ultimas_5_chutes": [2,3,2,2,3], "ult.5_faltas_sofridas": [2,3,3,2,3], "ult.5_faltas_cometidas": [1,2,1,1,2]},
             {"num": "99", "nome": "C. Olivera", "pos": "Atacante", "media_gols": 0.40, "ultimas_5_chutes": [2,2,3,3,2], "ult.5_faltas_sofridas": [3,2,3,2,3], "ult.5_faltas_cometidas": [2,1,2,2,3]}
-        ],
-        "Vasco DA Gama": [
-            {"num": "1", "nome": "Léo Jardim", "pos": "Goleiro", "media_gols": 0.0, "ultimas_5_chutes": [0,0,0,0,0], "ult.5_faltas_sofridas": [0,0,0,0,0], "ult.5_faltas_cometidas": [0,0,0,0,0]},
-            {"num": "9", "nome": "F. Colidio", "pos": "Atacante", "media_gols": 0.65, "ultimas_5_chutes": [3,2,3,4,3], "ult.5_faltas_sofridas": [2,3,2,3,4], "ult.5_faltas_cometidas": [1,1,2,1,1]},
-            {"num": "10", "nome": "Johan Rojas", "pos": "Meia", "media_gols": 0.35, "ultimas_5_chutes": [2,1,3,2,2], "ult.5_faltas_sofridas": [3,4,3,2,3], "ult.5_faltas_cometidas": [1,2,1,1,2]}
-        ],
-        "Fluminense": [
-            {"num": "1", "nome": "Fábio", "pos": "Goleiro", "media_gols": 0.0, "ultimas_5_chutes": [0,0,0,0,0], "ult.5_faltas_sofridas": [0,0,0,0,0], "ult.5_faltas_cometidas": [0,0,0,0,0]},
-            {"num": "9", "nome": "Germán Cano", "pos": "Atacante", "media_gols": 0.75, "ultimas_5_chutes": [3,4,3,4,3], "ult.5_faltas_sofridas": [2,2,3,2,2], "ult.5_faltas_cometidas": [1,1,0,1,1]},
-            {"num": "10", "nome": "Paulo Henrique Ganso", "pos": "Meia", "media_gols": 0.25, "ultimas_5_chutes": [1,2,1,2,1], "ult.5_faltas_sofridas": [3,4,3,3,4], "ult.5_faltas_cometidas": [2,3,2,3,2]}
         ]
     }
     
@@ -113,57 +106,55 @@ def obter_elenco_completo_com_medias(time_nome):
 
     return elenco
 
-# --- 4. CATÁLOGO MASTER DE MERCADOS (COM FILTROS SELECIONÁVEIS) ---
-def obter_catalogo_completo_filtrado(mandante, visitante, mercados_ativos):
-    catalogo = []
+# --- 4. CATÁLOGO SEPARADO POR CATEGORIA DE MERCADO ---
+def obter_opcoes_por_categoria(mandante, visitante, categoria):
+    itens = []
     
-    if "Gols" in mercados_ativos:
-        catalogo.extend([
-            {"nome": "Mais de 1.5 Gols na Partida", "odd": 1.15, "tipo": "gols", "prob": 82},
-            {"nome": "Menos de 4.5 Gols na Partida", "odd": 1.12, "tipo": "gols", "prob": 88}
+    if categoria == "Gols":
+        itens.extend([
+            {"nome": "Mais de 1.5 Gols na Partida", "odd": 1.15, "tipo": "gols_15", "prob": 82},
+            {"nome": "Menos de 4.5 Gols na Partida", "odd": 1.12, "tipo": "gols_45", "prob": 88}
         ])
-        
-    if "Escanteios" in mercados_ativos:
-        catalogo.extend([
-            {"nome": "Mais de 7.5 Escanteios Totais", "odd": 1.18, "tipo": "cantos", "prob": 78},
-            {"nome": "Mais de 8.5 Escanteios Totais", "odd": 1.45, "tipo": "cantos", "prob": 70}
+    elif categoria == "Escanteios":
+        itens.extend([
+            {"nome": "Mais de 7.5 Escanteios Totais", "odd": 1.18, "tipo": "cantos_75", "prob": 78},
+            {"nome": "Mais de 8.5 Escanteios Totais", "odd": 1.45, "tipo": "cantos_85", "prob": 70}
         ])
-        
-    if "Cartões" in mercados_ativos:
-        catalogo.extend([
-            {"nome": "Menos de 6.5 Cartões Amarelos", "odd": 1.15, "tipo": "cartoes", "prob": 85},
-            {"nome": "Mais de 3.5 Cartões Amarelos", "odd": 2.40, "tipo": "cartoes", "prob": 68}
+    elif categoria == "Cartões":
+        itens.extend([
+            {"nome": "Menos de 6.5 Cartões Amarelos", "odd": 1.15, "tipo": "cartoes_65", "prob": 85},
+            {"nome": "Mais de 3.5 Cartões Amarelos", "odd": 2.40, "tipo": "cartoes_35", "prob": 68}
         ])
-        
-    if "Handicap" in mercados_ativos:
-        catalogo.extend([
-            {"nome": f"Dupla Chance: {mandante} ou Empate", "odd": 1.12, "tipo": "res", "prob": 86},
-            {"nome": f"Dupla Chance: {visitante} ou Empate", "odd": 1.22, "tipo": "res", "prob": 80}
-        ])
-        
-    for time_nome in [mandante, visitante]:
-        elenco = obter_elenco_completo_com_medias(time_nome)
-        for p in elenco:
-            if "Chutes ao Gol" in mercados_ativos or "Finalizações" in mercados_ativos:
-                if p["pos"] in ["Atacante", "Meia"] and p["media_chutes_5j"] >= 1.0:
-                    odd_chute = round(max(1.35, 2.10 - (p["media_chutes_5j"] * 0.1)), 2)
-                    catalogo.append({"nome": f"#{p['num']} {p['nome']} ({time_nome}) — 0.5+ Chutes ao Gol (Média 5J: {p['media_chutes_5j']})", "odd": odd_chute, "tipo": f"chute_{p['num']}_{time_nome}", "prob": 75})
+    elif categoria == "Handicap":
+        gigantes = ["Manchester City", "Bayern München", "Real Madrid", "Arsenal", "Barcelona", "Liverpool", "Botafogo", "Flamengo", "Palmeiras"]
+        if mandante in gigantes or "City" in mandante:
+            itens.extend([
+                {"nome": f"Dupla Chance: {mandante} ou Empate", "odd": 1.08, "tipo": "dc_m", "prob": 92},
+                {"nome": f"Vitória Simples: {mandante}", "odd": 1.35, "tipo": "vit_m", "prob": 78}
+            ])
+        else:
+            itens.extend([
+                {"nome": f"Dupla Chance: {mandante} ou Empate", "odd": 1.15, "tipo": "dc_m", "prob": 82},
+                {"nome": f"Dupla Chance: {visitante} ou Empate", "odd": 1.18, "tipo": "dc_v", "prob": 80}
+            ])
+    else:
+        # Props de Jogadores (Chutes, Finalizações, Faltas Sofridas, Faltas Cometidas)
+        for time_nome in [mandante, visitante]:
+            elenco = obter_elenco_completo_com_medias(time_nome)
+            for p in elenco:
+                if categoria in ["Chutes ao Gol", "Finalizações"] and p["pos"] in ["Atacante", "Meia"] and p["media_chutes_5j"] >= 1.0:
+                    odd_c = round(max(1.35, 2.10 - (p["media_chutes_5j"] * 0.1)), 2)
+                    itens.append({"nome": f"#{p['num']} {p['nome']} ({time_nome}) — 0.5+ Chutes ao Gol (Média 5J: {p['media_chutes_5j']})", "odd": odd_c, "tipo": f"chute_{p['num']}_{time_nome}", "prob": 75})
                     
-            if "Faltas Sofridas" in mercados_ativos:
-                if p["media_f_sof_5j"] >= 1.0:
-                    odd_f_sof = round(max(1.40, 2.15 - (p["media_f_sof_5j"] * 0.1)), 2)
-                    catalogo.append({"nome": f"#{p['num']} {p['nome']} ({time_nome}) — 1+ Faltas Sofridas (Média 5J: {p['media_f_sof_5j']})", "odd": odd_f_sof, "tipo": f"fsof_{p['num']}_{time_nome}", "prob": 78})
+                if categoria == "Faltas Sofridas" and p["media_f_sof_5j"] >= 1.0:
+                    odd_f = round(max(1.40, 2.15 - (p["media_f_sof_5j"] * 0.1)), 2)
+                    itens.append({"nome": f"#{p['num']} {p['nome']} ({time_nome}) — 1+ Faltas Sofridas (Média 5J: {p['media_f_sof_5j']})", "odd": odd_f, "tipo": f"fsof_{p['num']}_{time_nome}", "prob": 78})
                     
-            if "Faltas Cometidas" in mercados_ativos:
-                if p["media_f_com_5j"] >= 1.0:
-                    odd_f_com = round(max(1.35, 2.10 - (p["media_f_com_5j"] * 0.1)), 2)
-                    catalogo.append({"nome": f"#{p['num']} {p['nome']} ({time_nome}) — 1+ Faltas Cometidas (Média 5J: {p['media_f_com_5j']})", "odd": odd_f_com, "tipo": f"fcom_{p['num']}_{time_nome}", "prob": 76})
-
-    # Fallback caso nenhum mercado específico tenha retornado itens
-    if not catalogo:
-        catalogo = [{"nome": "Mais de 1.5 Gols na Partida", "odd": 1.15, "tipo": "gols", "prob": 82}]
-
-    return catalogo
+                if categoria == "Faltas Cometidas" and p["media_f_com_5j"] >= 1.0:
+                    odd_fc = round(max(1.35, 2.10 - (p["media_f_com_5j"] * 0.1)), 2)
+                    itens.append({"nome": f"#{p['num']} {p['nome']} ({time_nome}) — 1+ Faltas Cometidas (Média 5J: {p['media_f_com_5j']})", "odd": odd_fc, "tipo": f"fcom_{p['num']}_{time_nome}", "prob": 76})
+                    
+    return itens
 
 @st.cache_data(ttl=7200)
 def carregar_rodada_completa(api_key, data_base):
@@ -206,9 +197,11 @@ def carregar_rodada_completa(api_key, data_base):
             
     if not todos_os_jogos:
         times_exemplo = [
+            ("Manchester City", "Coventry City", "Premier League (Inglaterra)"),
+            ("Newcastle", "Bournemouth", "Premier League (Inglaterra)"),
             ("Bragantino", "Bahia", "Brasileirão Série A"),
+            ("Botafogo", "Palmeiras", "Brasileirão Série A"),
             ("Fluminense", "Vasco DA Gama", "Brasileirão Série A"),
-            ("Flamengo", "Palmeiras", "Brasileirão Série A"),
             ("Santos", "Sport Recife", "Brasileirão Série B"),
             ("Remo", "Náutico", "Brasileirão Série C"),
             ("Itabaiana", "Cianorte", "Brasileirão Série D"),
@@ -332,7 +325,10 @@ with aba_auto:
             
             if st.button("⚡ Gerar 4 Variações", type="primary", use_container_width=True):
                 mercados_todos = ["Gols", "Escanteios", "Cartões", "Chutes ao Gol", "Finalizações", "Handicap", "Faltas Sofridas", "Faltas Cometidas"]
-                catalogo = obter_catalogo_completo_filtrado(m, v, mercados_todos)
+                catalogo = []
+                for cat_m in mercados_todos:
+                    catalogo.extend(obter_opcoes_por_categoria(m, v, cat_m))
+                    
                 bilhetes_gerados = []
                 tentativas = 0
                 
@@ -403,17 +399,17 @@ with aba_elite:
         st.info("Nenhum jogo disponível.")
 
 # ==========================================
-# ABA 5: CRIAR APOSTA MASTER (CAIXAS DE SELEÇÃO DE MERCADO + SLIDER DE ODD 1.10 A 10.0)
+# ABA 5: CRIAR APOSTA MASTER (FORÇANDO TODAS AS OPÇÕES MARCADAS)
 # ==========================================
 with aba_personalizada:
     st.markdown("### 🛠️ Criar Aposta Master (Seleção de Mercados & Slider de Odd 1.10 a 10.0)")
     if not df_jogos.empty:
-        st.write("Selecione os jogos, escolha quais mercados deseja incluir no bilhete e defina a sua Odd Alvo utilizando o controle deslizante.")
+        st.write("Selecione os jogos, marque quais categorias de mercado você quer incluir obrigatoriamente e defina a sua Odd Alvo.")
         
         lista_jogos_formatada = [f"{row['Liga Categoria']} | {row['Mandante']} x {row['Visitante']}" for _, row in df_jogos.iterrows()]
         jogos_escolhidos = st.multiselect("Selecione os jogos para o Criar Aposta:", lista_jogos_formatada, key="criar_aposta_selecao")
         
-        st.markdown("#### 🎯 Marque os Mercados Desejados para a Composição:")
+        st.markdown("#### 🎯 Marque os Mercados Desejados para a Composição (Garantimos a Inclusão):")
         col_m1, col_m2, col_m3, col_m4 = st.columns(4)
         with col_m1:
             m_gols = st.checkbox("⚽ Gols", value=True)
@@ -434,7 +430,6 @@ with aba_personalizada:
             if not jogos_escolhidos:
                 st.warning("⚠️ Selecione pelo menos um jogo acima para gerar a aposta.")
             else:
-                # Constrói a lista de mercados ativos com base nas caixas marcadas
                 mercados_ativos = []
                 if m_gols: mercados_ativos.append("Gols")
                 if m_cantos: mercados_ativos.append("Escanteios")
@@ -453,62 +448,68 @@ with aba_personalizada:
                     tipos_por_jogo = {jg: set() for jg in jogos_escolhidos}
                     probs_lista = []
                     
+                    # Passo 1: Força a inclusão de PELO MENOS uma opção de cada categoria marcada pelo usuário
                     for jg in jogos_escolhidos:
                         partida_nome = jg.split(" | ")[1]
                         mandante = partida_nome.split(" x ")[0]
                         visitante = partida_nome.split(" x ")[1]
                         
-                        cat_jogo = obter_catalogo_completo_filtrado(mandante, visitante, mercados_ativos)
-                        if cat_jogo:
-                            escolha = random.choice(cat_jogo)
-                            odds_selecoes.append(escolha["odd"])
-                            probs_lista.append(escolha["prob"])
-                            detalhes_por_jogo[jg].append(f"• `{escolha['nome']}` (Odd: `{escolha['odd']}`)")
-                            tipos_por_jogo[jg].add(escolha["tipo"])
-                    
-                    if odds_selecoes:
-                        odd_atual = calcular_odd_criar_aposta(odds_selecoes)
-                        
-                        tentativa = 0
-                        while odd_atual < alvo_multipla and tentativa < 40:
-                            jg_alvo = random.choice(jogos_escolhidos)
-                            partida_nome = jg_alvo.split(" | ")[1]
-                            mandante = partida_nome.split(" x ")[0]
-                            visitante = partida_nome.split(" x ")[1]
-                            
-                            cat_jogo = obter_catalogo_completo_filtrado(mandante, visitante, mercados_ativos)
-                            disponiveis = [c for c in cat_jogo if c["tipo"] not in tipos_por_jogo[jg_alvo]]
-                            
-                            if disponiveis:
-                                escolha_extra = random.choice(disponiveis)
-                                odds_selecoes.append(escolha_extra["odd"])
-                                probs_lista.append(escolha_extra["prob"])
-                                detalhes_por_jogo[jg_alvo].append(f"• `{escolha_extra['nome']}` (Odd: `{escolha_extra['odd']}`)")
-                                tipos_por_jogo[jg_alvo].add(escolha_extra["tipo"])
-                                odd_atual = calcular_odd_criar_aposta(odds_selecoes)
+                        for cat_m in mercados_ativos:
+                            opcoes_cat = obter_opcoes_por_categoria(mandante, visitante, cat_m)
+                            if opcoes_cat:
+                                # Pega uma opção da categoria que ainda não foi usada na partida
+                                disponiveis_cat = [op for op in opcoes_cat if op["tipo"] not in tipos_por_jogo[jg]]
+                                if not disponiveis_cat:
+                                    disponiveis_cat = opcoes_cat
+                                escolha = random.choice(disponiveis_cat)
                                 
-                                if odd_atual >= (alvo_multipla * 0.98):
-                                    break
-                            tentativa += 1
+                                odds_selecoes.append(escolha["odd"])
+                                probs_lista.append(escolha["prob"])
+                                detalhes_por_jogo[jg].append(f"• `{escolha['nome']}` (Odd: `{escolha['odd']}`)")
+                                tipos_por_jogo[jg].add(escolha["tipo"])
+                    
+                    odd_atual = calcular_odd_criar_aposta(odds_selecoes)
+                    
+                    # Passo 2: Se a odd estiver abaixo do alvo, adiciona mais opções das categorias ativas até atingir a meta
+                    tentativa = 0
+                    while odd_atual < alvo_multipla and tentativa < 30:
+                        jg_alvo = random.choice(jogos_escolhidos)
+                        partida_nome = jg_alvo.split(" | ")[1]
+                        mandante = partida_nome.split(" x ")[0]
+                        visitante = partida_nome.split(" x ")[1]
+                        
+                        cat_aleatoria = random.choice(mercados_ativos)
+                        opcoes_cat = obter_opcoes_por_categoria(mandante, visitante, cat_aleatoria)
+                        disponiveis = [c for c in opcoes_cat if c["tipo"] not in tipos_por_jogo[jg_alvo]]
+                        
+                        if disponiveis:
+                            escolha_extra = random.choice(disponiveis)
+                            odds_selecoes.append(escolha_extra["odd"])
+                            probs_lista.append(escolha_extra["prob"])
+                            detalhes_por_jogo[jg_alvo].append(f"• `{escolha_extra['nome']}` (Odd: `{escolha_extra['odd']}`)")
+                            tipos_por_jogo[jg_alvo].add(escolha_extra["tipo"])
+                            odd_atual = calcular_odd_criar_aposta(odds_selecoes)
+                            
+                            if odd_atual >= (alvo_multipla * 0.98):
+                                break
+                        tentativa += 1
 
-                        prob_final_calculada = int(sum(probs_lista) / len(probs_lista)) if probs_lista else 75
-                        prob_final_calculada = max(60, min(95, prob_final_calculada))
-                        
-                        st.divider()
-                        st.markdown("### 🟥 CADASTRADO NO ESTILO SUPERBET: CRIAR APOSTA AUTOMÁTICO")
-                        for jg in jogos_escolhidos:
-                            partida_nome = jg.split(" | ")[1]
-                            with st.container(border=True):
-                                st.markdown(f"⚽ **{partida_nome}**")
-                                for item in detalhes_por_jogo[jg]:
-                                    st.markdown(f"  {item}")
-                        
-                        st.write("")
-                        c1, c2 = st.columns(2)
-                        c1.metric("🏆 Odd Total Criar Aposta", f"{odd_atual}")
-                        c2.metric("📊 Probabilidade Calculada", f"{prob_final_calculada}%")
-                        renderizar_confianca(prob_final_calculada)
-                    else:
-                        st.warning("⚠️ Nenhum mercado disponível com os filtros marcados para os jogos selecionados.")
+                    prob_final_calculada = int(sum(probs_lista) / len(probs_lista)) if probs_lista else 75
+                    prob_final_calculada = max(60, min(95, prob_final_calculada))
+                    
+                    st.divider()
+                    st.markdown("### 🟥 CADASTRADO NO ESTILO SUPERBET: CRIAR APOSTA AUTOMÁTICO")
+                    for jg in jogos_escolhidos:
+                        partida_nome = jg.split(" | ")[1]
+                        with st.container(border=True):
+                            st.markdown(f"⚽ **{partida_nome}**")
+                            for item in detalhes_por_jogo[jg]:
+                                st.markdown(f"  {item}")
+                    
+                    st.write("")
+                    c1, c2 = st.columns(2)
+                    c1.metric("🏆 Odd Total Criar Aposta", f"{odd_atual}")
+                    c2.metric("📊 Probabilidade Calculada", f"{prob_final_calculada}%")
+                    renderizar_confianca(prob_final_calculada)
     else:
         st.info("Nenhum jogo disponível para os filtros selecionados.")
