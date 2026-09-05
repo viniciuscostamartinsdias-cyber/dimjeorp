@@ -1,13 +1,3 @@
-
-Conversa com o Gemini
-Quero q pegue todos os mercados na superbet e adicione tem como?
-
-Para incorporar absolutamente todos os mercados tradicionais e especiais que a Superbet oferece (incluindo mais linhas de Handicaps Asiáticos/Europeus, Gols Exatos, Ambas Marcam em tempos específicos, Super Placar, Intervalo/Final do Jogo (HT/FT), Escanteios por faixa, Cartões exatos e a prateleira completa de Props de Jogadores para chutes, passes e faltas), a melhor abordagem é expandir o catálogo-base do sistema para um dicionário abrangente de mercados reais.
-
-Com essa atualização, o scanner terá centenas de combinações dinâmicas possíveis, cobrindo o leque inteiro da Superbet para que você possa gerar apostas simples, criar apostas automáticas e montar múltiplas personalizadas de alta precisão.
-
-Substitua todo o conteúdo do seu app.py por este código completo e atualizado:
-
 Python
 import streamlit as st
 import pandas as pd
@@ -20662,22 +20652,6 @@ with aba_personalizada:
                     c1.metric("🏆 Odd Total Criar Aposta", f"{odd_atual}")
                     c2.metric("📊 Probabilidade Calculada", f"{prob_final_calculada}%")
                     renderizar_confianca(prob_final_calculada)
-novamenet os elencos desatualizados como exemplo o hulk e o paulinho e eu quero q mostre todo o elenco dos times com os titulares com cada um com sua estatisticas e a sugestao seja de todos os mercados
-
-Remoção Completa de Dados Fixos e Integração 100% Dinâmica (Titulares + Todos os Mercados)
-
-O problema estava ocorrendo porque o sistema ainda mantinha um dicionário de "segurança" (fallback) com elencos fixos antigos, o que forçava jogadores como Hulk e Paulinho a aparecerem nos times errados caso a API demorasse a responder.
-
-Para resolver isso de forma definitiva para o ano de 2026:
-
-Extinção do Banco Manual: Removi 100% dos elencos fixos do código. Agora, o sistema puxa apenas os dados diretos da API-Sports. Caso a API não tenha o time, ele gerará 11 titulares dinâmicos para não quebrar a tela, mas nunca forçará um jogador real antigo no time errado.
-
-Elenco Completo (11 Titulares): O dossiê agora exibe os 11 titulares de cada time, com todas as métricas detalhadas (Gols, Finalizações, Chutes, Faltas e Cartões).
-
-Sugestões para Todos os Mercados: O algoritmo de Dicas (💡) foi expandido para rastrear e sugerir entradas em todos os mercados estatísticos para cada atleta listado.
-
-Substitua todo o seu arquivo app.py por esta versão final:
-
 Python
 import streamlit as st
 import pandas as pd
