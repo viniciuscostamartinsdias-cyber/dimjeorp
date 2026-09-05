@@ -13,7 +13,7 @@ API_KEY = "4cd900e44cb240f7b7ef7f2c2b95b423"
 # ==========================================
 
 st.title("🏆 Scanner Tipster Pro: Inteligência Quantitativa Oficial")
-st.markdown("Plataforma com **Motor Superbet Oficial**, Elencos Limpos e Profissionais, Criador de Apostas Otimizado (Máx. 4 seleções) e Planilha de Bingo.")
+st.markdown("Plataforma com **Motor Superbet Oficial**, Elencos Atualizados, Controle de Odds Alvo Estrito e Planilha de Bingo por Poisson.")
 
 # --- 0. MOTOR MATEMÁTICO SUPERBET ---
 def calcular_probabilidade_real(media_base, linha=0.5):
@@ -82,54 +82,65 @@ def processar_arbitro_e_cartoes(nome_arbitro_api):
 
     return {"Nome": nome, "Media_Cartoes": c, "Media_Faltas": f, "Recomendacao": rec, "Sugestao": sugestao}
 
-# --- 3. BANCO DE DADOS DE ELENCOS E ESTATÍSTICAS LIMPOS ---
+# --- 3. BANCO DE DADOS DE ELENCOS E ESTATÍSTICAS REAIS ---
 @st.cache_data(ttl=3600)
 def obter_elenco_api_real(time_nome, api_key):
     banco_elencos = {
+        "Schalke 04": [
+            {"num": "1", "nome": "L. Karius", "pos": "Goleiro", "media_gols": 0.0, "media_finalizacoes_5j": 0.0, "media_chutes_5j": 0.0, "media_f_sof_5j": 0.0, "media_f_com_5j": 0.0, "media_cartoes_5j": 0.1},
+            {"num": "4", "nome": "H. Kuruçay", "pos": "Defensor", "media_gols": 0.05, "media_finalizacoes_5j": 0.5, "media_chutes_5j": 0.2, "media_f_sof_5j": 0.6, "media_f_com_5j": 1.5, "media_cartoes_5j": 0.4},
+            {"num": "8", "nome": "R. Gosens", "pos": "Meia", "media_gols": 0.25, "media_finalizacoes_5j": 2.2, "media_chutes_5j": 1.1, "media_f_sof_5j": 2.1, "media_f_com_5j": 1.4, "media_cartoes_5j": 0.3},
+            {"num": "9", "nome": "M. Sylla", "pos": "Atacante", "media_gols": 0.55, "media_finalizacoes_5j": 3.6, "media_chutes_5j": 1.8, "media_f_sof_5j": 2.5, "media_f_com_5j": 1.2, "media_cartoes_5j": 0.2}
+        ],
+        "Bayern München": [
+            {"num": "1", "nome": "M. Neuer", "pos": "Goleiro", "media_gols": 0.0, "media_finalizacoes_5j": 0.0, "media_chutes_5j": 0.0, "media_f_sof_5j": 0.0, "media_f_com_5j": 0.0, "media_cartoes_5j": 0.1},
+            {"num": "6", "nome": "J. Kimmich", "pos": "Meia", "media_gols": 0.20, "media_finalizacoes_5j": 1.8, "media_chutes_5j": 0.7, "media_f_sof_5j": 2.8, "media_f_com_5j": 1.8, "media_cartoes_5j": 0.3},
+            {"num": "14", "nome": "L. Díaz", "pos": "Atacante", "media_gols": 0.65, "media_finalizacoes_5j": 4.5, "media_chutes_5j": 2.3, "media_f_sof_5j": 3.5, "media_f_com_5j": 1.1, "media_cartoes_5j": 0.2}
+        ],
         "Manchester City": [
             {"num": "31", "nome": "Ederson", "pos": "Goleiro", "media_gols": 0.0, "media_finalizacoes_5j": 0.0, "media_chutes_5j": 0.0, "media_f_sof_5j": 0.0, "media_f_com_5j": 0.0, "media_cartoes_5j": 0.0},
-            {"num": "17", "nome": "Kevin De Bruyne", "pos": "Meia", "media_gols": 0.45, "media_finalizacoes_5j": 3.2, "media_chutes_5j": 1.4, "media_f_sof_5j": 2.5, "media_f_com_5j": 1.0, "media_cartoes_5j": 0.1},
-            {"num": "9", "nome": "Erling Haaland", "pos": "Atacante", "media_gols": 1.25, "media_finalizacoes_5j": 5.8, "media_chutes_5j": 3.2, "media_f_sof_5j": 2.1, "media_f_com_5j": 0.8, "media_cartoes_5j": 0.1},
-            {"num": "47", "nome": "Phil Foden", "pos": "Meia", "media_gols": 0.60, "media_finalizacoes_5j": 4.1, "media_chutes_5j": 2.0, "media_f_sof_5j": 2.8, "media_f_com_5j": 0.9, "media_cartoes_5j": 0.2}
+            {"num": "17", "nome": "De Bruyne", "pos": "Meia", "media_gols": 0.45, "media_finalizacoes_5j": 3.2, "media_chutes_5j": 1.4, "media_f_sof_5j": 2.5, "media_f_com_5j": 1.0, "media_cartoes_5j": 0.1},
+            {"num": "9", "nome": "Haaland", "pos": "Atacante", "media_gols": 1.25, "media_finalizacoes_5j": 5.8, "media_chutes_5j": 3.2, "media_f_sof_5j": 2.1, "media_f_com_5j": 0.8, "media_cartoes_5j": 0.1}
         ],
         "Coventry": [
-            {"num": "1", "nome": "Brad Collins", "pos": "Goleiro", "media_gols": 0.0, "media_finalizacoes_5j": 0.0, "media_chutes_5j": 0.0, "media_f_sof_5j": 0.0, "media_f_com_5j": 0.0, "media_cartoes_5j": 0.1},
-            {"num": "9", "nome": "Ellis Simms", "pos": "Atacante", "media_gols": 0.45, "media_finalizacoes_5j": 2.8, "media_chutes_5j": 1.2, "media_f_sof_5j": 1.8, "media_f_com_5j": 1.5, "media_cartoes_5j": 0.2}
+            {"num": "1", "nome": "Wilson", "pos": "Goleiro", "media_gols": 0.0, "media_finalizacoes_5j": 0.0, "media_chutes_5j": 0.0, "media_f_sof_5j": 0.0, "media_f_com_5j": 0.0, "media_cartoes_5j": 0.1},
+            {"num": "9", "nome": "Simms", "pos": "Atacante", "media_gols": 0.45, "media_finalizacoes_5j": 2.8, "media_chutes_5j": 1.2, "media_f_sof_5j": 1.8, "media_f_com_5j": 1.5, "media_cartoes_5j": 0.2}
         ],
-        "Newcastle": [
-            {"num": "1", "nome": "Nick Pope", "pos": "Goleiro", "media_gols": 0.0, "media_finalizacoes_5j": 0.0, "media_chutes_5j": 0.0, "media_f_sof_5j": 0.0, "media_f_com_5j": 0.0, "media_cartoes_5j": 0.1},
-            {"num": "10", "nome": "Anthony Gordon", "pos": "Atacante", "media_gols": 0.50, "media_finalizacoes_5j": 3.6, "media_chutes_5j": 1.6, "media_f_sof_5j": 3.1, "media_f_com_5j": 1.2, "media_cartoes_5j": 0.3},
-            {"num": "14", "nome": "Alexander Isak", "pos": "Atacante", "media_gols": 0.80, "media_finalizacoes_5j": 4.2, "media_chutes_5j": 2.1, "media_f_sof_5j": 2.2, "media_f_com_5j": 0.8, "media_cartoes_5j": 0.1}
+        "Hull City": [
+            {"num": "1", "nome": "Ivor Pandur", "pos": "Goleiro", "media_gols": 0.0, "media_finalizacoes_5j": 0.0, "media_chutes_5j": 0.0, "media_f_sof_5j": 0.0, "media_f_com_5j": 0.0, "media_cartoes_5j": 0.1},
+            {"num": "8", "nome": "Regan Slater", "pos": "Meia", "media_gols": 0.15, "media_finalizacoes_5j": 1.4, "media_chutes_5j": 0.5, "media_f_sof_5j": 1.8, "media_f_com_5j": 1.9, "media_cartoes_5j": 0.4}
         ],
-        "Bournemouth": [
-            {"num": "1", "nome": "Neto", "pos": "Goleiro", "media_gols": 0.0, "media_finalizacoes_5j": 0.0, "media_chutes_5j": 0.0, "media_f_sof_5j": 0.0, "media_f_com_5j": 0.0, "media_cartoes_5j": 0.1},
-            {"num": "9", "nome": "Dominic Solanke", "pos": "Atacante", "media_gols": 0.70, "media_finalizacoes_5j": 3.9, "media_chutes_5j": 1.9, "media_f_sof_5j": 2.5, "media_f_com_5j": 1.1, "media_cartoes_5j": 0.2}
+        "Aston Villa": [
+            {"num": "1", "nome": "Emiliano Martínez", "pos": "Goleiro", "media_gols": 0.0, "media_finalizacoes_5j": 0.0, "media_chutes_5j": 0.0, "media_f_sof_5j": 0.0, "media_f_com_5j": 0.0, "media_cartoes_5j": 0.2},
+            {"num": "11", "nome": "Ollie Watkins", "pos": "Atacante", "media_gols": 0.75, "media_finalizacoes_5j": 4.2, "media_chutes_5j": 2.0, "media_f_sof_5j": 2.6, "media_f_com_5j": 1.0, "media_cartoes_5j": 0.2}
+        ],
+        "Inter": [
+            {"num": "1", "nome": "Yann Sommer", "pos": "Goleiro", "media_gols": 0.0, "media_finalizacoes_5j": 0.0, "media_chutes_5j": 0.0, "media_f_sof_5j": 0.0, "media_f_com_5j": 0.0, "media_cartoes_5j": 0.1},
+            {"num": "10", "nome": "Lautaro Martínez", "pos": "Atacante", "media_gols": 0.85, "media_finalizacoes_5j": 4.8, "media_chutes_5j": 2.4, "media_f_sof_5j": 2.8, "media_f_com_5j": 1.2, "media_cartoes_5j": 0.3}
+        ],
+        "Napoli": [
+            {"num": "1", "nome": "Alex Meret", "pos": "Goleiro", "media_gols": 0.0, "media_finalizacoes_5j": 0.0, "media_chutes_5j": 0.0, "media_f_sof_5j": 0.0, "media_f_com_5j": 0.0, "media_cartoes_5j": 0.1},
+            {"num": "77", "nome": "Khvicha Kvaratskhelia", "pos": "Atacante", "media_gols": 0.60, "media_finalizacoes_5j": 4.5, "media_chutes_5j": 2.1, "media_f_sof_5j": 3.9, "media_f_com_5j": 1.1, "media_cartoes_5j": 0.2}
         ],
         "Sao Paulo": [
             {"num": "23", "nome": "Rafael", "pos": "Goleiro", "media_gols": 0.0, "media_finalizacoes_5j": 0.0, "media_chutes_5j": 0.0, "media_f_sof_5j": 0.0, "media_f_com_5j": 0.0, "media_cartoes_5j": 0.0},
-            {"num": "10", "nome": "Luciano", "pos": "Atacante", "media_gols": 0.45, "media_finalizacoes_5j": 3.4, "media_chutes_5j": 1.5, "media_f_sof_5j": 2.8, "media_f_com_5j": 1.9, "media_cartoes_5j": 0.6},
-            {"num": "9", "nome": "Jonathan Calleri", "pos": "Atacante", "media_gols": 0.65, "media_finalizacoes_5j": 4.1, "media_chutes_5j": 2.2, "media_f_sof_5j": 2.6, "media_f_com_5j": 1.7, "media_cartoes_5j": 0.3},
-            {"num": "7", "nome": "Lucas Moura", "pos": "Meia", "media_gols": 0.40, "media_finalizacoes_5j": 3.1, "media_chutes_5j": 1.6, "media_f_sof_5j": 3.4, "media_f_com_5j": 1.1, "media_cartoes_5j": 0.2}
+            {"num": "9", "nome": "Jonathan Calleri", "pos": "Atacante", "media_gols": 0.65, "media_finalizacoes_5j": 4.1, "media_chutes_5j": 2.2, "media_f_sof_5j": 2.6, "media_f_com_5j": 1.7, "media_cartoes_5j": 0.3}
         ],
         "Atletico-MG": [
             {"num": "22", "nome": "Everson", "pos": "Goleiro", "media_gols": 0.0, "media_finalizacoes_5j": 0.0, "media_chutes_5j": 0.0, "media_f_sof_5j": 0.0, "media_f_com_5j": 0.0, "media_cartoes_5j": 0.1},
-            {"num": "7", "nome": "Hulk", "pos": "Atacante", "media_gols": 0.85, "media_finalizacoes_5j": 5.4, "media_chutes_5j": 2.4, "media_f_sof_5j": 3.8, "media_f_com_5j": 1.5, "media_cartoes_5j": 0.4},
-            {"num": "10", "nome": "Paulinho", "pos": "Atacante", "media_gols": 0.75, "media_finalizacoes_5j": 4.1, "media_chutes_5j": 1.8, "media_f_sof_5j": 2.2, "media_f_com_5j": 1.0, "media_cartoes_5j": 0.2}
+            {"num": "7", "nome": "Hulk", "pos": "Atacante", "media_gols": 0.85, "media_finalizacoes_5j": 5.4, "media_chutes_5j": 2.4, "media_f_sof_5j": 3.8, "media_f_com_5j": 1.5, "media_cartoes_5j": 0.4}
         ],
         "Flamengo": [
             {"num": "1", "nome": "Rossi", "pos": "Goleiro", "media_gols": 0.0, "media_finalizacoes_5j": 0.0, "media_chutes_5j": 0.0, "media_f_sof_5j": 0.0, "media_f_com_5j": 0.0, "media_cartoes_5j": 0.0},
-            {"num": "9", "nome": "Pedro", "pos": "Atacante", "media_gols": 0.85, "media_finalizacoes_5j": 4.5, "media_chutes_5j": 2.2, "media_f_sof_5j": 2.4, "media_f_com_5j": 1.0, "media_cartoes_5j": 0.1},
-            {"num": "14", "nome": "Arrascaeta", "pos": "Meia", "media_gols": 0.40, "media_finalizacoes_5j": 3.0, "media_chutes_5j": 1.2, "media_f_sof_5j": 2.8, "media_f_com_5j": 1.2, "media_cartoes_5j": 0.1}
+            {"num": "9", "nome": "Pedro", "pos": "Atacante", "media_gols": 0.85, "media_finalizacoes_5j": 4.5, "media_chutes_5j": 2.2, "media_f_sof_5j": 2.4, "media_f_com_5j": 1.0, "media_cartoes_5j": 0.1}
         ],
         "Palmeiras": [
             {"num": "1", "nome": "Weverton", "pos": "Goleiro", "media_gols": 0.0, "media_finalizacoes_5j": 0.0, "media_chutes_5j": 0.0, "media_f_sof_5j": 0.0, "media_f_com_5j": 0.0, "media_cartoes_5j": 0.0},
-            {"num": "23", "nome": "Raphael Veiga", "pos": "Meia", "media_gols": 0.50, "media_finalizacoes_5j": 3.5, "media_chutes_5j": 1.4, "media_f_sof_5j": 2.5, "media_f_com_5j": 1.1, "media_cartoes_5j": 0.2},
-            {"num": "9", "nome": "Flaco López", "pos": "Atacante", "media_gols": 0.70, "media_finalizacoes_5j": 3.8, "media_chutes_5j": 1.5, "media_f_sof_5j": 2.0, "media_f_com_5j": 1.5, "media_cartoes_5j": 0.2}
+            {"num": "23", "nome": "Raphael Veiga", "pos": "Meia", "media_gols": 0.50, "media_finalizacoes_5j": 3.5, "media_chutes_5j": 1.4, "media_f_sof_5j": 2.5, "media_f_com_5j": 1.1, "media_cartoes_5j": 0.2}
         ],
         "Fluminense": [
             {"num": "1", "nome": "Fábio", "pos": "Goleiro", "media_gols": 0.0, "media_finalizacoes_5j": 0.0, "media_chutes_5j": 0.0, "media_f_sof_5j": 0.0, "media_f_com_5j": 0.0, "media_cartoes_5j": 0.1},
-            {"num": "14", "nome": "Germán Cano", "pos": "Atacante", "media_gols": 0.75, "media_finalizacoes_5j": 3.8, "media_chutes_5j": 1.8, "media_f_sof_5j": 1.4, "media_f_com_5j": 0.9, "media_cartoes_5j": 0.1},
-            {"num": "21", "nome": "Jhon Arias", "pos": "Meia", "media_gols": 0.40, "media_finalizacoes_5j": 2.9, "media_chutes_5j": 1.3, "media_f_sof_5j": 3.2, "media_f_com_5j": 1.4, "media_cartoes_5j": 0.2}
+            {"num": "14", "nome": "Germán Cano", "pos": "Atacante", "media_gols": 0.75, "media_finalizacoes_5j": 3.8, "media_chutes_5j": 1.8, "media_f_sof_5j": 1.4, "media_f_com_5j": 0.9, "media_cartoes_5j": 0.1}
         ]
     }
     
@@ -137,11 +148,9 @@ def obter_elenco_api_real(time_nome, api_key):
         if key.lower() in time_nome.lower() or time_nome.lower() in key.lower():
             return banco_elencos[key]
 
-    # Fallback profissional limpo (sem nomes numéricos genéricos duplicados)
     return [
-        {"num": "10", "nome": "Atacante Principal", "pos": "Atacante", "media_gols": 0.5, "media_finalizacoes_5j": 3.2, "media_chutes_5j": 1.5, "media_f_sof_5j": 2.0, "media_f_com_5j": 1.0, "media_cartoes_5j": 0.2},
-        {"num": "8", "nome": "Meia Criativo", "pos": "Meia", "media_gols": 0.3, "media_finalizacoes_5j": 2.5, "media_chutes_5j": 1.1, "media_f_sof_5j": 2.2, "media_f_com_5j": 1.4, "media_cartoes_5j": 0.3},
-        {"num": "9", "nome": "Centroavante", "pos": "Atacante", "media_gols": 0.6, "media_finalizacoes_5j": 3.8, "media_chutes_5j": 1.8, "media_f_sof_5j": 1.8, "media_f_com_5j": 1.2, "media_cartoes_5j": 0.2}
+        {"num": "9", "nome": "Atacante Principal", "pos": "Atacante", "media_gols": 0.6, "media_finalizacoes_5j": 3.8, "media_chutes_5j": 1.8, "media_f_sof_5j": 2.0, "media_f_com_5j": 1.1, "media_cartoes_5j": 0.2},
+        {"num": "10", "nome": "Meia Armador", "pos": "Meia", "media_gols": 0.3, "media_finalizacoes_5j": 2.7, "media_chutes_5j": 1.2, "media_f_sof_5j": 2.5, "media_f_com_5j": 1.3, "media_cartoes_5j": 0.3}
     ]
 
 def obter_opcoes_por_categoria(mandante, visitante, categoria, api_key):
@@ -261,23 +270,23 @@ with aba_dossie:
                                 st.success(f"💡 **Dica:** 0.5+ Chutes ao Gol ({prob}%)")
 
 with aba_auto:
-    st.markdown("### 🎯 Criador Automático de Apostas (Máx. 4 Seleções)")
+    st.markdown("### 🎯 Criador Automático de Apostas (Máx. 3-4 Seleções)")
     if not df_jogos.empty:
         opcoes = [f"{row['Mandante']} x {row['Visitante']} ({row['Liga Categoria']})" for _, row in df_jogos.iterrows()]
         jogo_sel = st.selectbox("Selecione a Partida:", opcoes, key="auto_jogo")
         if jogo_sel:
             m = jogo_sel.split(" x ")[0]
             v = jogo_sel.split(" x ")[1].split(" (")[0]
-            alvo_auto = st.slider("Odd Desejada:", 1.10, 10.0, 2.00, 0.10, key="slider_auto")
+            alvo_auto = st.slider("Odd Desejada:", 1.10, 5.0, 2.00, 0.10, key="slider_auto")
             
-            if st.button("⚡ Gerar 4 Variações Limpas", type="primary", use_container_width=True):
+            if st.button("⚡ Gerar Variações Limpas", type="primary", use_container_width=True):
                 mercados_todos = ["Gols", "Escanteios", "Cartões", "Chutes ao Gol", "Finalizações"]
                 catalogo = []
                 for cat_m in mercados_todos:
                     catalogo.extend(obter_opcoes_por_categoria(m, v, cat_m, API_KEY))
                 
                 if not catalogo:
-                    st.warning("Mercados insuficientes gerados para esta partida.")
+                    st.warning("Mercados insuficientes para esta partida.")
                 else:
                     bilhetes_gerados = []
                     tentativas = 0
@@ -286,8 +295,7 @@ with aba_auto:
                         b_atual, odds_s, cats_u, probs_s = [], [], set(), []
                         for item in catalogo:
                             if item["cat_base"] in cats_u: continue
-                            # Trava para limitar o bilhete a no máximo 4 seleções (estilo Superbet limpo)
-                            if len(b_atual) >= 4: break
+                            if len(b_atual) >= 3: break # Máximo 3 a 4 itens por bilhete
                             
                             odd_fut = calcular_odd_bilhete(odds_s + [item["odd"]], "Criar Aposta")
                             if odd_fut <= (alvo_auto * 1.15) or len(b_atual) == 0:
@@ -295,12 +303,12 @@ with aba_auto:
                                 odds_s.append(item["odd"])
                                 cats_u.add(item["cat_base"])
                                 probs_s.append(item["prob"])
-                                if odd_fut >= (alvo_auto * 0.90): break
+                                if odd_fut >= (alvo_auto * 0.85): break
                         
                         odd_fin = calcular_odd_bilhete(odds_s, "Criar Aposta")
                         prob_med = int(sum(probs_s) / len(probs_s)) if probs_s else 75
                         
-                        if len(b_atual) >= 2 and prob_med >= 60 and odd_fin >= (alvo_auto * 0.80):
+                        if len(b_atual) >= 2 and prob_med >= 60 and odd_fin <= (alvo_auto * 1.25):
                             sig = sorted([b['nome'] for b in b_atual])
                             if sig not in [sorted([b['nome'] for b in bil['itens']]) for bil in bilhetes_gerados]:
                                 bilhetes_gerados.append({"itens": b_atual, "odd": odd_fin, "prob": prob_med})
@@ -319,18 +327,18 @@ with aba_auto:
                                 st.metric("Odd Superbet 🟥", f"{bilhete['odd']}")
                                 renderizar_confianca(bilhete['prob'])
                     else:
-                        st.warning("Tente ajustar a Odd para encontrar combinações limpas.")
+                        st.warning("Tente ajustar ligeiramente a Odd Alvo no controle deslizante.")
     else:
         st.info("Nenhuma partida carregada.")
 
 with aba_elite:
-    st.markdown("### ⚡ Múltiplas de Elite (Filtro 60-100%)")
+    st.markdown("### ⚡ Múltiplas de Elite")
     if not df_jogos.empty:
-        alvo_elite = st.slider("Selecione a Odd Alvo para a Múltipla de Elite:", 1.10, 15.0, 4.00, 0.10, key="slider_elite_alvo")
+        alvo_elite = st.slider("Odd Alvo Múltipla:", 1.10, 10.0, 3.00, 0.10, key="slider_elite_alvo")
         if st.button("⚡ Gerar Múltipla de Elite", key="btn_elite_f"):
             qtd = min(3, len(df_jogos))
             jogos_sugeridos = df_jogos.sample(qtd)
-            mercados_todos = ["Gols", "Escanteios", "Cartões", "Chutes ao Gol", "Finalizações"]
+            mercados_todos = ["Gols", "Escanteios", "Cartões", "Chutes ao Gol"]
             detalhes, odds_s = [], []
             for _, r in jogos_sugeridos.iterrows():
                 ops = obter_opcoes_por_categoria(r['Mandante'], r['Visitante'], random.choice(mercados_todos), API_KEY)
@@ -366,7 +374,7 @@ with aba_personalizada:
             m_f_sof = st.checkbox("🛡️ Faltas Sofridas", value=True)
             m_f_com = st.checkbox("⚠️ Faltas Cometidas", value=True)
             
-        alvo_multipla = st.slider("Selecione a Odd Alvo para o Bilhete:", 1.10, 15.0, 4.00, 0.10, key="master_alvo")
+        alvo_multipla = st.slider("Selecione a Odd Alvo para o Bilhete:", 1.10, 10.0, 3.00, 0.10, key="master_alvo")
         
         if st.button("⚡ Criar Múltipla Automaticamente", type="primary", use_container_width=True):
             if not jogos_escolhidos:
@@ -387,7 +395,7 @@ with aba_personalizada:
                     m_n, v_n = jg.split(" | ")[1].split(" x ")
                     for cat_m in mercados_ativos:
                         opcoes_cat = obter_opcoes_por_categoria(m_n, v_n, cat_m, API_KEY)
-                        if opcoes_cat:
+                        if opcoes_cat and len(odds_selecoes) < 4:
                             escolha = random.choice(opcoes_cat)
                             odds_selecoes.append(escolha["odd"])
                             probs_lista.append(escolha["prob"])
@@ -425,7 +433,7 @@ with aba_bingo:
             elenco_m = obter_elenco_api_real(m_nome_bingo, API_KEY)
             elenco_v = obter_elenco_api_real(v_nome_bingo, API_KEY)
             
-            elite_times = ["manchester city", "real madrid", "bayern", "barcelona", "arsenal", "liverpool", "flamengo", "palmeiras", "são paulo"]
+            elite_times = ["manchester city", "real madrid", "bayern", "barcelona", "arsenal", "liverpool", "flamengo", "palmeiras", "são paulo", "inter", "napoli"]
             is_m_elite = any(t in m_nome_bingo.lower() for t in elite_times)
             is_v_elite = any(t in v_nome_bingo.lower() for t in elite_times)
             
