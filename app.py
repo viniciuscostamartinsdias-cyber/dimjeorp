@@ -13,7 +13,7 @@ API_KEY = "4cd900e44cb240f7b7ef7f2c2b95b423"
 # ==========================================
 
 st.title("🏆 Scanner Tipster Pro: Inteligência Quantitativa Oficial")
-st.markdown("Plataforma com **Motor Superbet Oficial**, Elencos Atualizados, Dicas Progressivas, Criador Automático Completo e Planilha de Bingo por Poisson.")
+st.markdown("Plataforma com **Motor Superbet Oficial**, Elencos Limpos e Profissionais, Criador de Apostas Otimizado (Máx. 4 seleções) e Planilha de Bingo.")
 
 # --- 0. MOTOR MATEMÁTICO SUPERBET ---
 def calcular_probabilidade_real(media_base, linha=0.5):
@@ -82,24 +82,33 @@ def processar_arbitro_e_cartoes(nome_arbitro_api):
 
     return {"Nome": nome, "Media_Cartoes": c, "Media_Faltas": f, "Recomendacao": rec, "Sugestao": sugestao}
 
-# --- 3. BANCO DE DADOS DE ELENCOS E ESTATÍSTICAS ---
+# --- 3. BANCO DE DADOS DE ELENCOS E ESTATÍSTICAS LIMPOS ---
 @st.cache_data(ttl=3600)
 def obter_elenco_api_real(time_nome, api_key):
     banco_elencos = {
         "Manchester City": [
             {"num": "31", "nome": "Ederson", "pos": "Goleiro", "media_gols": 0.0, "media_finalizacoes_5j": 0.0, "media_chutes_5j": 0.0, "media_f_sof_5j": 0.0, "media_f_com_5j": 0.0, "media_cartoes_5j": 0.0},
-            {"num": "17", "nome": "De Bruyne", "pos": "Meia", "media_gols": 0.45, "media_finalizacoes_5j": 3.2, "media_chutes_5j": 1.4, "media_f_sof_5j": 2.5, "media_f_com_5j": 1.0, "media_cartoes_5j": 0.1},
-            {"num": "9", "nome": "Haaland", "pos": "Atacante", "media_gols": 1.25, "media_finalizacoes_5j": 5.8, "media_chutes_5j": 3.2, "media_f_sof_5j": 2.1, "media_f_com_5j": 0.8, "media_cartoes_5j": 0.1},
-            {"num": "47", "nome": "Foden", "pos": "Meia", "media_gols": 0.60, "media_finalizacoes_5j": 4.1, "media_chutes_5j": 2.0, "media_f_sof_5j": 2.8, "media_f_com_5j": 0.9, "media_cartoes_5j": 0.2}
+            {"num": "17", "nome": "Kevin De Bruyne", "pos": "Meia", "media_gols": 0.45, "media_finalizacoes_5j": 3.2, "media_chutes_5j": 1.4, "media_f_sof_5j": 2.5, "media_f_com_5j": 1.0, "media_cartoes_5j": 0.1},
+            {"num": "9", "nome": "Erling Haaland", "pos": "Atacante", "media_gols": 1.25, "media_finalizacoes_5j": 5.8, "media_chutes_5j": 3.2, "media_f_sof_5j": 2.1, "media_f_com_5j": 0.8, "media_cartoes_5j": 0.1},
+            {"num": "47", "nome": "Phil Foden", "pos": "Meia", "media_gols": 0.60, "media_finalizacoes_5j": 4.1, "media_chutes_5j": 2.0, "media_f_sof_5j": 2.8, "media_f_com_5j": 0.9, "media_cartoes_5j": 0.2}
         ],
         "Coventry": [
-            {"num": "1", "nome": "Wilson", "pos": "Goleiro", "media_gols": 0.0, "media_finalizacoes_5j": 0.0, "media_chutes_5j": 0.0, "media_f_sof_5j": 0.0, "media_f_com_5j": 0.0, "media_cartoes_5j": 0.1},
-            {"num": "9", "nome": "Simms", "pos": "Atacante", "media_gols": 0.45, "media_finalizacoes_5j": 2.8, "media_chutes_5j": 1.2, "media_f_sof_5j": 1.8, "media_f_com_5j": 1.5, "media_cartoes_5j": 0.2}
+            {"num": "1", "nome": "Brad Collins", "pos": "Goleiro", "media_gols": 0.0, "media_finalizacoes_5j": 0.0, "media_chutes_5j": 0.0, "media_f_sof_5j": 0.0, "media_f_com_5j": 0.0, "media_cartoes_5j": 0.1},
+            {"num": "9", "nome": "Ellis Simms", "pos": "Atacante", "media_gols": 0.45, "media_finalizacoes_5j": 2.8, "media_chutes_5j": 1.2, "media_f_sof_5j": 1.8, "media_f_com_5j": 1.5, "media_cartoes_5j": 0.2}
+        ],
+        "Newcastle": [
+            {"num": "1", "nome": "Nick Pope", "pos": "Goleiro", "media_gols": 0.0, "media_finalizacoes_5j": 0.0, "media_chutes_5j": 0.0, "media_f_sof_5j": 0.0, "media_f_com_5j": 0.0, "media_cartoes_5j": 0.1},
+            {"num": "10", "nome": "Anthony Gordon", "pos": "Atacante", "media_gols": 0.50, "media_finalizacoes_5j": 3.6, "media_chutes_5j": 1.6, "media_f_sof_5j": 3.1, "media_f_com_5j": 1.2, "media_cartoes_5j": 0.3},
+            {"num": "14", "nome": "Alexander Isak", "pos": "Atacante", "media_gols": 0.80, "media_finalizacoes_5j": 4.2, "media_chutes_5j": 2.1, "media_f_sof_5j": 2.2, "media_f_com_5j": 0.8, "media_cartoes_5j": 0.1}
+        ],
+        "Bournemouth": [
+            {"num": "1", "nome": "Neto", "pos": "Goleiro", "media_gols": 0.0, "media_finalizacoes_5j": 0.0, "media_chutes_5j": 0.0, "media_f_sof_5j": 0.0, "media_f_com_5j": 0.0, "media_cartoes_5j": 0.1},
+            {"num": "9", "nome": "Dominic Solanke", "pos": "Atacante", "media_gols": 0.70, "media_finalizacoes_5j": 3.9, "media_chutes_5j": 1.9, "media_f_sof_5j": 2.5, "media_f_com_5j": 1.1, "media_cartoes_5j": 0.2}
         ],
         "Sao Paulo": [
             {"num": "23", "nome": "Rafael", "pos": "Goleiro", "media_gols": 0.0, "media_finalizacoes_5j": 0.0, "media_chutes_5j": 0.0, "media_f_sof_5j": 0.0, "media_f_com_5j": 0.0, "media_cartoes_5j": 0.0},
             {"num": "10", "nome": "Luciano", "pos": "Atacante", "media_gols": 0.45, "media_finalizacoes_5j": 3.4, "media_chutes_5j": 1.5, "media_f_sof_5j": 2.8, "media_f_com_5j": 1.9, "media_cartoes_5j": 0.6},
-            {"num": "9", "nome": "J. Calleri", "pos": "Atacante", "media_gols": 0.65, "media_finalizacoes_5j": 4.1, "media_chutes_5j": 2.2, "media_f_sof_5j": 2.6, "media_f_com_5j": 1.7, "media_cartoes_5j": 0.3},
+            {"num": "9", "nome": "Jonathan Calleri", "pos": "Atacante", "media_gols": 0.65, "media_finalizacoes_5j": 4.1, "media_chutes_5j": 2.2, "media_f_sof_5j": 2.6, "media_f_com_5j": 1.7, "media_cartoes_5j": 0.3},
             {"num": "7", "nome": "Lucas Moura", "pos": "Meia", "media_gols": 0.40, "media_finalizacoes_5j": 3.1, "media_chutes_5j": 1.6, "media_f_sof_5j": 3.4, "media_f_com_5j": 1.1, "media_cartoes_5j": 0.2}
         ],
         "Atletico-MG": [
@@ -128,21 +137,12 @@ def obter_elenco_api_real(time_nome, api_key):
         if key.lower() in time_nome.lower() or time_nome.lower() in key.lower():
             return banco_elencos[key]
 
-    is_elite = any(t in time_nome.lower() for t in ["city", "real", "bayern", "barcelona", "arsenal", "liverpool", "flamengo", "palmeiras"])
-    gols_base = 0.6 if is_elite else 0.35
-    
-    elenco_gerado = []
-    posicoes = ["Goleiro", "Defensor", "Defensor", "Defensor", "Defensor", "Meia", "Meia", "Meia", "Atacante", "Atacante", "Atacante"]
-    for i, pos in enumerate(posicoes):
-        num = str(i + 1 if i == 0 else random.randint(2, 33))
-        elenco_gerado.append({
-            "num": num, "nome": f"Jogador {num} ({time_nome})", "pos": pos,
-            "media_gols": gols_base if pos == 'Atacante' else (0.2 if pos == 'Meia' else 0.05),
-            "media_finalizacoes_5j": 3.5 if pos in ['Atacante', 'Meia'] else 0.8,
-            "media_chutes_5j": 1.6 if pos in ['Atacante', 'Meia'] else 0.3,
-            "media_f_sof_5j": 2.0, "media_f_com_5j": 1.5, "media_cartoes_5j": 0.2
-        })
-    return elenco_gerado
+    # Fallback profissional limpo (sem nomes numéricos genéricos duplicados)
+    return [
+        {"num": "10", "nome": "Atacante Principal", "pos": "Atacante", "media_gols": 0.5, "media_finalizacoes_5j": 3.2, "media_chutes_5j": 1.5, "media_f_sof_5j": 2.0, "media_f_com_5j": 1.0, "media_cartoes_5j": 0.2},
+        {"num": "8", "nome": "Meia Criativo", "pos": "Meia", "media_gols": 0.3, "media_finalizacoes_5j": 2.5, "media_chutes_5j": 1.1, "media_f_sof_5j": 2.2, "media_f_com_5j": 1.4, "media_cartoes_5j": 0.3},
+        {"num": "9", "nome": "Centroavante", "pos": "Atacante", "media_gols": 0.6, "media_finalizacoes_5j": 3.8, "media_chutes_5j": 1.8, "media_f_sof_5j": 1.8, "media_f_com_5j": 1.2, "media_cartoes_5j": 0.2}
+    ]
 
 def obter_opcoes_por_categoria(mandante, visitante, categoria, api_key):
     itens = []
@@ -261,7 +261,7 @@ with aba_dossie:
                                 st.success(f"💡 **Dica:** 0.5+ Chutes ao Gol ({prob}%)")
 
 with aba_auto:
-    st.markdown("### 🎯 Criador Automático de Apostas")
+    st.markdown("### 🎯 Criador Automático de Apostas (Máx. 4 Seleções)")
     if not df_jogos.empty:
         opcoes = [f"{row['Mandante']} x {row['Visitante']} ({row['Liga Categoria']})" for _, row in df_jogos.iterrows()]
         jogo_sel = st.selectbox("Selecione a Partida:", opcoes, key="auto_jogo")
@@ -270,7 +270,7 @@ with aba_auto:
             v = jogo_sel.split(" x ")[1].split(" (")[0]
             alvo_auto = st.slider("Odd Desejada:", 1.10, 10.0, 2.00, 0.10, key="slider_auto")
             
-            if st.button("⚡ Gerar 4 Variações", type="primary", use_container_width=True):
+            if st.button("⚡ Gerar 4 Variações Limpas", type="primary", use_container_width=True):
                 mercados_todos = ["Gols", "Escanteios", "Cartões", "Chutes ao Gol", "Finalizações"]
                 catalogo = []
                 for cat_m in mercados_todos:
@@ -286,18 +286,21 @@ with aba_auto:
                         b_atual, odds_s, cats_u, probs_s = [], [], set(), []
                         for item in catalogo:
                             if item["cat_base"] in cats_u: continue
+                            # Trava para limitar o bilhete a no máximo 4 seleções (estilo Superbet limpo)
+                            if len(b_atual) >= 4: break
+                            
                             odd_fut = calcular_odd_bilhete(odds_s + [item["odd"]], "Criar Aposta")
                             if odd_fut <= (alvo_auto * 1.15) or len(b_atual) == 0:
                                 b_atual.append(item)
                                 odds_s.append(item["odd"])
                                 cats_u.add(item["cat_base"])
                                 probs_s.append(item["prob"])
-                                if odd_fut >= (alvo_auto * 0.95): break
+                                if odd_fut >= (alvo_auto * 0.90): break
                         
                         odd_fin = calcular_odd_bilhete(odds_s, "Criar Aposta")
                         prob_med = int(sum(probs_s) / len(probs_s)) if probs_s else 75
                         
-                        if len(b_atual) > 0 and prob_med >= 60 and odd_fin >= (alvo_auto * 0.85):
+                        if len(b_atual) >= 2 and prob_med >= 60 and odd_fin >= (alvo_auto * 0.80):
                             sig = sorted([b['nome'] for b in b_atual])
                             if sig not in [sorted([b['nome'] for b in bil['itens']]) for bil in bilhetes_gerados]:
                                 bilhetes_gerados.append({"itens": b_atual, "odd": odd_fin, "prob": prob_med})
@@ -316,7 +319,7 @@ with aba_auto:
                                 st.metric("Odd Superbet 🟥", f"{bilhete['odd']}")
                                 renderizar_confianca(bilhete['prob'])
                     else:
-                        st.warning("Tente ajustar o controle deslizante de Odd para encontrar combinações.")
+                        st.warning("Tente ajustar a Odd para encontrar combinações limpas.")
     else:
         st.info("Nenhuma partida carregada.")
 
@@ -328,8 +331,7 @@ with aba_elite:
             qtd = min(3, len(df_jogos))
             jogos_sugeridos = df_jogos.sample(qtd)
             mercados_todos = ["Gols", "Escanteios", "Cartões", "Chutes ao Gol", "Finalizações"]
-            detalhes = []
-            odds_s = []
+            detalhes, odds_s = [], []
             for _, r in jogos_sugeridos.iterrows():
                 ops = obter_opcoes_por_categoria(r['Mandante'], r['Visitante'], random.choice(mercados_todos), API_KEY)
                 if ops:
