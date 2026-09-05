@@ -97,11 +97,12 @@ def obter_dados_elenco_e_estatisticas(time):
         }
     
     h = sum(ord(c) for c in time)
+    sigla = time[:3].upper() if len(time) >= 3 else time.upper()
     return {
         "jogadores": [
-            {"nome": f"Atacante Principal", "camisa": "9", "pos": "Atacante", "prop_segura": "0.5+ Chutes ao Gol", "odd_prop": 1.35},
-            {"nome": f"Meia Armador", "camisa": "10", "pos": "Meia", "prop_segura": "1+ Faltas Sofridas", "odd_prop": 1.25},
-            {"nome": f"Volante", "camisa": "5", "pos": "Volante", "prop_segura": "1+ Faltas Cometidas", "odd_prop": 1.20}
+            {"nome": f"Atacante ({sigla})", "camisa": "9", "pos": "Atacante", "prop_segura": "0.5+ Chutes ao Gol", "odd_prop": 1.35},
+            {"nome": f"Meia ({sigla})", "camisa": "10", "pos": "Meia", "prop_segura": "1+ Faltas Sofridas", "odd_prop": 1.25},
+            {"nome": f"Volante ({sigla})", "camisa": "5", "pos": "Volante", "prop_segura": "1+ Faltas Cometidas", "odd_prop": 1.20}
         ],
         "artilheiro": f"Principal Artilheiro ({time})",
         "assistente": f"Principal Assistente ({time})",
@@ -230,16 +231,16 @@ with aba_principal:
         st.info("Nenhum jogo encontrado para esta data.")
 
 # ==========================================
-# ABA 2: CAÇADOR DE ODDS (ALTA PROBABILIDADE E JOGADORES)
+# ABA 2: CAÇADOR DE ODDS (COM IDS BLINDADOS CONTRA DUPLICAÇÃO)
 # ==========================================
 with aba_cacador:
     st.markdown("### 🎯 Caçador de Odd Alvo & Criador IA (Superbet)")
     if not df_jogos.empty:
-        liga_sel = st.selectbox("1️⃣ Selecione a Liga:", sorted(df_jogos['Liga'].unique()), key="c_liga_sb_v39")
+        liga_sel = st.selectbox("1️⃣ Selecione a Liga:", sorted(df_jogos['Liga'].unique()), key="c_liga_sb_v40")
         jogos_liga_sel = df_jogos[df_jogos['Liga'] == liga_sel]
         
         opcoes = [f"{row['Data']} - {row['Horário']} | {row['Mandante']} x {row['Visitante']}" for _, row in jogos_liga_sel.iterrows()]
-        jogo_sel = st.selectbox("2️⃣ Selecione a Partida:", opcoes, key="c_jogo_sb_v39")
+        jogo_sel = st.selectbox("2️⃣ Selecione a Partida:", opcoes, key="c_jogo_sb_v40")
         
         if jogo_sel:
             linha_jogo = jogos_liga_sel[jogos_liga_sel.apply(lambda r: f"{r['Data']} - {r['Horário']} | {r['Mandante']} x {r['Visitante']}" == jogo_sel, axis=1)].iloc[0]
@@ -253,8 +254,8 @@ with aba_cacador:
             jf = dv["jogadores"]
             arbitro = processar_arbitro(linha_jogo['Árbitro API'])
             
-            alvo = st.number_input("3️⃣ Digite a Odd Alvo Desejada:", 1.05, 100.0, 2.00, 0.25, key="alvo_v39")
-            tipo_aposta = st.radio("4️⃣ Escolha o Modo:", ["Criar Aposta Personalizado / IA", "Aposta Simples (Solo)"], key="tipo_sb_v39")
+            alvo = st.number_input("3️⃣ Digite a Odd Alvo Desejada:", 1.05, 100.0, 2.00, 0.25, key="alvo_v40")
+            tipo_aposta = st.radio("4️⃣ Escolha o Modo:", ["Criar Aposta Personalizado / IA", "Aposta Simples (Solo)"], key="tipo_sb_v40")
             st.divider()
             
             if tipo_aposta == "Aposta Simples (Solo)":
@@ -266,9 +267,9 @@ with aba_cacador:
                     f"Mais de 7.5 Escanteios",
                     f"#{jc[0]['nome']} (0.5+ Chutes ao Gol)",
                     f"#{jf[0]['nome']} (0.5+ Chutes ao Gol)"
-                ], key="solo_sb_v39")
+                ], key="solo_sb_v40")
                 
-                if st.button("🚀 Buscar Odd Alvo no Mercado Simples", key="btn_solo_sb_v39"):
+                if st.button("🚀 Buscar Odd Alvo no Mercado Simples", key="btn_solo_sb_v40"):
                     odds_superbet_map = {"Vitória Simples": 1.55, "Dupla Chance": 1.18, "Mais de 0.5": 1.05, "Mais de 1.5": 1.25, "Escanteios": 1.35}
                     base_odd = odds_superbet_map.get(opcao_solo.split(":")[0].strip(), jc[0]['odd_prop'])
                     
@@ -280,10 +281,9 @@ with aba_cacador:
                     c2.metric("Probabilidade Real", f"{prob_matematica}%")
             else:
                 st.markdown(f"### 🤖 IA Dinâmica: Alta Probabilidade para a Odd ({alvo:.2f})")
-                st.write(f"A IA foi programada para escolher as opções **mais fáceis e seguras** do mercado (ex: +0.5 gols, finalizações de craques, poucas faltas/cartões) até somar a odd desejada.")
+                st.write(f"A IA foi programada para escolher as opções **mais fáceis e seguras** do mercado até somar a odd desejada.")
                 
-                if st.button("⚡ Gerar Bilhete Super Seguro (IA)", key="btn_ia_dinamica_v39"):
-                    # Catálogo apenas com opções MUITO seguras (odds baixas)
+                if st.button("⚡ Gerar Bilhete Super Seguro (IA)", key="btn_ia_dinamica_v40"):
                     catalogo_super_seguro = [
                         {"nome": f"#{jc[0]['nome']} ({jc[0]['prop_segura']})", "odd": jc[0]['odd_prop']},
                         {"nome": f"#{jf[0]['nome']} ({jf[0]['prop_segura']})", "odd": jf[0]['odd_prop']},
@@ -295,7 +295,6 @@ with aba_cacador:
                         {"nome": f"Dupla Chance: {m} ou Empate", "odd": 1.20}
                     ]
                     
-                    # Ordena do mais seguro (menor odd) para o menos seguro, garantindo escolhas de altíssima probabilidade
                     catalogo_super_seguro = sorted(catalogo_super_seguro, key=lambda x: x['odd'])
                     
                     bilhete_gerado = []
@@ -307,7 +306,6 @@ with aba_cacador:
                             acumulador_odd *= item["odd"]
                     
                     acumulador_odd = round(acumulador_odd, 2)
-                    # Cálculo matemático real de probabilidade combinada (com margem de segurança)
                     prob_estimada = min(96, max(10, int((1.0 / acumulador_odd) * 100) + random.randint(-2, 3)))
                     
                     st.success(f"🔥 Bilhete com **{len(bilhete_gerado)} opções seguras** gerado para a meta de Odd {alvo}!")
@@ -326,28 +324,29 @@ with aba_cacador:
                 st.markdown("### 🛠️ Marque os Mercados Manualmente (Catálogo Seguro de Jogadores):")
                 
                 col_m1, col_m2, col_m3, col_m4 = st.columns(4)
+                # Adicionando KEYs únicas e fixas para evitar o erro DuplicateElementId
                 with col_m1:
                     st.markdown("**⚽ Gols & Resultado**")
-                    sel_g05 = st.checkbox("Mais de 0.5 Gols (1.06)", value=True)
-                    sel_g15 = st.checkbox("Mais de 1.5 Gols (1.22)", value=False)
-                    sel_dc = st.checkbox(f"Dupla Chance: {m} (1.20)", value=False)
+                    sel_g05 = st.checkbox("Mais de 0.5 Gols (1.06)", value=True, key=f"g05_{m}_{v}")
+                    sel_g15 = st.checkbox("Mais de 1.5 Gols (1.22)", value=False, key=f"g15_{m}_{v}")
+                    sel_dc = st.checkbox(f"Dupla Chance: {m} (1.20)", value=False, key=f"dc_{m}_{v}")
                 with col_m2:
                     st.markdown("**📐 Escanteios & Cartões**")
-                    sel_esc6 = st.checkbox("Mais de 6.5 Escanteios (1.18)", value=True)
-                    sel_esc8 = st.checkbox("Mais de 8.5 Escanteios (1.45)", value=False)
-                    sel_cartU = st.checkbox(f"Menos de 6.5 Cartões (1.15)", value=False)
+                    sel_esc6 = st.checkbox("Mais de 6.5 Escanteios (1.18)", value=True, key=f"e6_{m}_{v}")
+                    sel_esc8 = st.checkbox("Mais de 8.5 Escanteios (1.45)", value=False, key=f"e8_{m}_{v}")
+                    sel_cartU = st.checkbox(f"Menos de 6.5 Cartões (1.15)", value=False, key=f"cu_{m}_{v}")
                 with col_m3:
-                    st.markdown(f"**🎯 Estrelas ({m})**")
-                    sel_p1 = st.checkbox(f"#{jc[0]['nome']} ({jc[0]['prop_segura']} - {jc[0]['odd_prop']})", value=True)
-                    sel_p2 = st.checkbox(f"#{jc[1]['nome']} ({jc[1]['prop_segura']} - {jc[1]['odd_prop']})", value=False)
-                    sel_p3 = st.checkbox(f"#{jc[2]['nome']} ({jc[2]['prop_segura']} - {jc[2]['odd_prop']})", value=False)
+                    st.markdown(f"**🎯 Estrelas ({m[:10]})**")
+                    sel_p1 = st.checkbox(f"#{jc[0]['nome']} ({jc[0]['prop_segura']} - {jc[0]['odd_prop']})", value=True, key=f"p1_{m}_{v}")
+                    sel_p2 = st.checkbox(f"#{jc[1]['nome']} ({jc[1]['prop_segura']} - {jc[1]['odd_prop']})", value=False, key=f"p2_{m}_{v}")
+                    sel_p3 = st.checkbox(f"#{jc[2]['nome']} ({jc[2]['prop_segura']} - {jc[2]['odd_prop']})", value=False, key=f"p3_{m}_{v}")
                 with col_m4:
-                    st.markdown(f"**🛡️ Estrelas ({v})**")
-                    sel_v1 = st.checkbox(f"#{jf[0]['nome']} ({jf[0]['prop_segura']} - {jf[0]['odd_prop']})", value=False)
-                    sel_v2 = st.checkbox(f"#{jf[1]['nome']} ({jf[1]['prop_segura']} - {jf[1]['odd_prop']})", value=False)
-                    sel_v3 = st.checkbox(f"#{jf[2]['nome']} ({jf[2]['prop_segura']} - {jf[2]['odd_prop']})", value=False)
+                    st.markdown(f"**🛡️ Estrelas ({v[:10]})**")
+                    sel_v1 = st.checkbox(f"#{jf[0]['nome']} ({jf[0]['prop_segura']} - {jf[0]['odd_prop']})", value=False, key=f"v1_{m}_{v}")
+                    sel_v2 = st.checkbox(f"#{jf[1]['nome']} ({jf[1]['prop_segura']} - {jf[1]['odd_prop']})", value=False, key=f"v2_{m}_{v}")
+                    sel_v3 = st.checkbox(f"#{jf[2]['nome']} ({jf[2]['prop_segura']} - {jf[2]['odd_prop']})", value=False, key=f"v3_{m}_{v}")
                 
-                if st.button("🚀 Gerar Bilhete Manual com Odds da Superbet", key="btn_custom_sb_v39"):
+                if st.button("🚀 Gerar Bilhete Manual com Odds da Superbet", key="btn_custom_sb_v40"):
                     st.success("✅ Bilhete manual gerado com as opções mais seguras da Superbet!")
                     with st.container(border=True):
                         st.markdown(f"**📋 Criar Aposta Superbet ({m} x {v})**")
@@ -386,21 +385,20 @@ with aba_multiplas:
         st.markdown("#### 🤖 IA: Gerador Automático de Múltiplas Seguras")
         st.write("A inteligência artificial seleciona os jogos e utiliza apenas as opções de altíssima probabilidade (+0.5 gols, Dupla Chance).")
         
-        if st.button("⚡ Gerar Sugestão de Múltipla Pronta (IA)", key="btn_mult_ia_v39"):
+        if st.button("⚡ Gerar Sugestão de Múltipla Pronta (IA)", key="btn_mult_ia_v40"):
             if len(df_jogos) >= 3:
                 jogos_sugeridos = df_jogos.sample(3)
             else:
                 jogos_sugeridos = df_jogos
                 
             odd_multipla_auto = 1.0
-            prob_multipla_auto = 1.0 # Inicia o multiplicador corretamente em 1.0 para não estourar a porcentagem
+            prob_multipla_auto = 1.0 
             
             st.success("🔥 Sugestão de Múltipla de Alta Probabilidade Gerada!")
             for _, row_jogo in jogos_sugeridos.iterrows():
                 mandante = row_jogo['Mandante']
                 visitante = row_jogo['Visitante']
                 
-                # Mercados extremamente seguros para múltiplas
                 mercados_seguros = [
                     (f"Mais de 0.5 Gols na Partida", 1.06, 94),
                     (f"Dupla Chance: {mandante} ou Empate", 1.20, 83),
@@ -409,14 +407,13 @@ with aba_multiplas:
                 sel_mercado = random.choice(mercados_seguros)
                 
                 odd_multipla_auto *= sel_mercado[1]
-                prob_multipla_auto *= (sel_mercado[2] / 100.0) # Multiplica a probabilidade corretamente
+                prob_multipla_auto *= (sel_mercado[2] / 100.0) 
                 
                 with st.container(border=True):
                     st.markdown(f"⚽ **{mandante} x {visitante}**")
                     st.markdown(f"🎯 **Seleção:** `{sel_mercado[0]}`")
                     st.markdown(f"🟥 Odd Superbet: `{sel_mercado[1]}` | 📊 Chance Indiv: `{sel_mercado[2]}%`")
             
-            # Cálculo final e realista da porcentagem
             prob_final_pct = min(98, int(prob_multipla_auto * 100))
             
             c1, c2 = st.columns(2)
@@ -427,12 +424,12 @@ with aba_multiplas:
         st.markdown("#### 🛠️ Ou Monte a Sua Múltipla Manualmente:")
         
         lista = [f"{row['Liga']} | {row['Mandante']} x {row['Visitante']} ({row['Data']} - {row['Horário']})" for _, row in df_jogos.iterrows()]
-        selecionados = st.multiselect("Selecione as partidas para a sua Múltipla:", lista, key="m_sel_sb_v39")
+        selecionados = st.multiselect("Selecione as partidas para a sua Múltipla:", lista, key="m_sel_sb_v40")
         
         if selecionados:
             st.divider()
             os_ac = 1.0
-            prob_multipla = 1.0 # Correção do bug de probabilidade gigante
+            prob_multipla = 1.0
             
             for conf in selecionados:
                 m_v = conf.split(" | ")[1].split(" (")[0]
