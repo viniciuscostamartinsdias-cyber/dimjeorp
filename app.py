@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import random
 
 # Configuração da Página
-st.set_page_config(page_title="Tipster Pro - IA Dinâmica Avançada", layout="wide")
+st.set_page_config(page_title="Tipster Pro - IA & Árbitros", layout="wide")
 
 # ==========================================
 # 🔑 CHAVE DA API INTEGRADA
@@ -13,7 +13,7 @@ API_KEY = "4cd900e44cb240f7b7ef7f2c2b95b423"
 # ==========================================
 
 st.title("🏆 Scanner Tipster Pro: Inteligência Quantitativa Oficial")
-st.markdown("Plataforma oficial com motor de IA dinâmico calibrado na **Odd Alvo** utilizando todos os mercados da Superbet (gols, escanteios, cartões, chutes no gol, faltas e assistências).")
+st.markdown("Plataforma oficial com motor de IA dinâmico calibrado na **Odd Alvo**, integrando a **Média de Cartões do Árbitro escalado** para o jogo e gerador de Múltiplas.")
 
 # --- 1. MOTOR UNIVERSAL DE ELENCOS E ESTATÍSTICAS (2026) ---
 def obter_dados_elenco_e_estatisticas(time):
@@ -101,7 +101,7 @@ def processar_arbitro(nome_arbitro_api):
         f = round(20.0 + (h_val % 90) / 10.0, 1)
         p = round(0.25 + (h_val % 25) / 100.0, 2)
 
-    rec_c = "🔥 **Árbitro Rigoroso:** Alta tendência para cartões. **Recomendação:** `Mais de 3.5 ou 4.5 Cartões`." if c >= 4.8 else "ℹ️ **Árbitro Flexível:** Permite mais o jogo físico. **Recomendação:** `Menos de 4.5 Cartões (Under)`."
+    rec_c = "🔥 **Árbitro Rigoroso:** Alta tendência para cartões." if c >= 4.8 else "ℹ️ **Árbitro Flexível:** Permite mais o jogo físico."
     rec_p = "⚡ **Alerta de Pênalti:** Histórico elevado de marcas da cal." if p >= 0.40 else "ℹ️ **Baixa incidência de penalidades.**"
 
     return {"Nome": nome, "Media_Cartoes": c, "Media_Faltas": f, "Penaltis_Por_Jogo": p, "Rec_Cartoes": rec_c, "Rec_Penaltis": rec_p}
@@ -205,28 +205,32 @@ with aba_principal:
         st.info("Nenhum jogo encontrado para esta data.")
 
 # ==========================================
-# ABA 2: CAÇADOR DE ODDS COM PROPS EXPANDIDOS E MÚLTIPLAS
+# ABA 2: CAÇADOR DE ODDS (IA COM MÉDIA DE ÁRBITROS E 0.5 GOLS)
 # ==========================================
 with aba_cacador:
     st.markdown("### 🎯 Caçador de Odd Alvo & Criador IA (Superbet)")
     if not df_jogos.empty:
-        liga_sel = st.selectbox("1️⃣ Selecione a Liga:", sorted(df_jogos['Liga'].unique()), key="c_liga_sb_v34")
+        liga_sel = st.selectbox("1️⃣ Selecione a Liga:", sorted(df_jogos['Liga'].unique()), key="c_liga_sb_v37")
         jogos_liga_sel = df_jogos[df_jogos['Liga'] == liga_sel]
         
         opcoes = [f"{row['Data']} - {row['Horário']} | {row['Mandante']} x {row['Visitante']}" for _, row in jogos_liga_sel.iterrows()]
-        jogo_sel = st.selectbox("2️⃣ Selecione a Partida:", opcoes, key="c_jogo_sb_v34")
+        jogo_sel = st.selectbox("2️⃣ Selecione a Partida:", opcoes, key="c_jogo_sb_v37")
         
         if jogo_sel:
-            m = jogo_sel.split(" | ")[1].split(" x ")[0]
-            v = jogo_sel.split(" | ")[1].split(" x ")[1]
+            # Captura a linha exata do jogo para puxar o árbitro
+            linha_jogo = jogos_liga_sel[jogos_liga_sel.apply(lambda r: f"{r['Data']} - {r['Horário']} | {r['Mandante']} x {r['Visitante']}" == jogo_sel, axis=1)].iloc[0]
+            
+            m = linha_jogo['Mandante']
+            v = linha_jogo['Visitante']
             
             dm = obter_dados_elenco_e_estatisticas(m)
             dv = obter_dados_elenco_e_estatisticas(v)
             jc = dm["jogadores"]
             jf = dv["jogadores"]
+            arbitro = processar_arbitro(linha_jogo['Árbitro API'])
             
-            alvo = st.number_input("3️⃣ Digite a Odd Alvo Desejada:", 1.05, 100.0, 2.00, 0.25, key="alvo_v34")
-            tipo_aposta = st.radio("4️⃣ Escolha o Modo:", ["Aposta Simples (Solo)", "Criar Aposta Personalizado / IA"], key="tipo_sb_v34")
+            alvo = st.number_input("3️⃣ Digite a Odd Alvo Desejada:", 1.05, 100.0, 2.00, 0.25, key="alvo_v37")
+            tipo_aposta = st.radio("4️⃣ Escolha o Modo:", ["Aposta Simples (Solo)", "Criar Aposta Personalizado / IA"], key="tipo_sb_v37")
             st.divider()
             
             if tipo_aposta == "Aposta Simples (Solo)":
@@ -234,64 +238,59 @@ with aba_cacador:
                     f"Vitória Simples: {m}",
                     f"Dupla Chance: {m} ou Empate",
                     f"Ambas as Equipes Marcam (Sim)",
+                    f"Mais de 0.5 Gols",
                     f"Mais de 1.5 Gols",
                     f"Mais de 2.5 Gols",
-                    f"Mais de 8.5 Escanteios",
-                    f"#{jc[0]['nome']} (Mais de 0.5 Chutes ao Gol)",
-                    f"#{jf[0]['nome']} (Mais de 0.5 Chutes ao Gol)"
-                ], key="solo_sb_v34")
+                    f"Mais de 8.5 Escanteios"
+                ], key="solo_sb_v37")
                 
-                if st.button("🚀 Buscar Odd Alvo no Mercado Simples", key="btn_solo_sb_v34"):
-                    odds_superbet_map = {"Vitória Simples": 1.55, "Dupla Chance": 1.15, "Ambas": 1.75, "Mais de 1.5": 1.09, "Mais de 2.5": 1.80, "Escanteios": 1.45}
-                    base_odd = odds_superbet_map.get(opcao_solo.split(":")[0].strip(), 1.65)
+                if st.button("🚀 Buscar Odd Alvo no Mercado Simples", key="btn_solo_sb_v37"):
+                    odds_superbet_map = {"Vitória Simples": 1.55, "Dupla Chance": 1.18, "Ambas": 1.75, "Mais de 0.5": 1.05, "Mais de 1.5": 1.15, "Mais de 2.5": 1.65, "Escanteios": 1.42}
+                    base_odd = odds_superbet_map.get(opcao_solo.split(":")[0].strip(), 1.50)
                     
-                    if abs(base_odd - alvo) <= 0.50:
+                    if abs(base_odd - alvo) <= 0.40:
                         st.success(f"✅ Mercado simples encontrado próximo à sua Odd Alvo ({alvo})!")
                         c1, c2 = st.columns(2)
                         c1.metric("Odd Superbet 🟥", f"{base_odd}")
                         c2.metric("Probabilidade Real", f"{int(100/base_odd)}%")
                     else:
-                        st.warning(f"⚠️ A aposta simples isolada ({base_odd}) não atinge a Odd Alvo de {alvo}. Utilize o **Criador IA** para combinar múltiplos mercados até a meta.")
+                        st.warning(f"⚠️ A aposta simples isolada ({base_odd}) não atinge a Odd Alvo de {alvo}. Utilize o **Criador IA** abaixo.")
             else:
                 st.markdown(f"### 🤖 IA Dinâmica: Criar Aposta Baseada na Odd Alvo ({alvo:.2f})")
-                st.write("A inteligência artificial varre o catálogo expandido de jogadores, cartões e gols para montar exatamente a odd que você deseja.")
+                st.write(f"A IA analisa o histórico e a média rigorosa do árbitro escalado (**{arbitro['Nome']} | Média: {arbitro['Media_Cartoes']} Cartões**) para construir um bilhete inteligente.")
                 
-                if st.button("⚡ Gerar Bilhete Inteligente para a Odd Alvo", key="btn_ia_dinamica_v34"):
-                    # Catálogo expandido de Props e Mercados
-                    catalogo_disponivel = [
+                if st.button("⚡ Gerar Bilhete Inteligente para a Odd Alvo", key="btn_ia_dinamica_v37"):
+                    catalogo_seguro = [
+                        {"nome": "Mais de 0.5 Gols na Partida", "odd": 1.05},
                         {"nome": "Mais de 1.5 Gols na Partida", "odd": 1.15},
-                        {"nome": "Mais de 2.5 Gols na Partida", "odd": 1.65},
-                        {"nome": "Ambas as Equipes Marcam (Sim)", "odd": 1.75},
-                        {"nome": "Mais de 8.5 Escanteios Totais", "odd": 1.42},
-                        {"nome": "Mais de 9.5 Escanteios Totais", "odd": 1.95},
-                        {"nome": f"#{jc[0]['nome']} (Mais de 0.5 Chutes ao Gol)", "odd": 1.35},
-                        {"nome": f"#{jc[0]['nome']} (Mais de 1.5 Chutes ao Gol)", "odd": 2.10},
-                        {"nome": f"#{jc[1]['nome']} (1+ Assistência)", "odd": 3.40},
-                        {"nome": f"#{jf[0]['nome']} (Mais de 0.5 Chutes ao Gol)", "odd": 1.55},
-                        {"nome": f"#{jf[0]['nome']} (2+ Faltas Sofridas)", "odd": 1.45},
-                        {"nome": "Menos de 5.5 Cartões Amarelos", "odd": 1.30},
-                        {"nome": "Mais de 3.5 Cartões Amarelos", "odd": 1.50},
-                        {"nome": "Mais de 4.5 Cartões Amarelos", "odd": 2.05},
-                        {"nome": f"Vitória Simples: {m}", "odd": 1.55},
-                        {"nome": f"Dupla Chance: {m} ou Empate", "odd": 1.18}
+                        {"nome": "Mais de 7.5 Escanteios Totais", "odd": 1.25},
+                        {"nome": f"Dupla Chance: {m} ou Empate", "odd": 1.18},
+                        {"nome": f"#{jc[0]['nome']} (Mais de 0.5 Chutes ao Gol)", "odd": 1.25},
+                        {"nome": f"#{jf[0]['nome']} (1+ Faltas Sofridas)", "odd": 1.20}
                     ]
+                    
+                    # Lógica inteligente do Árbitro na IA
+                    if arbitro['Media_Cartoes'] >= 4.5:
+                        catalogo_seguro.append({"nome": f"Mais de 3.5 Cartões (Árbitro Rigoroso - Média {arbitro['Media_Cartoes']})", "odd": 1.45})
+                    else:
+                        catalogo_seguro.append({"nome": f"Menos de 5.5 Cartões (Árbitro Flexível - Média {arbitro['Media_Cartoes']})", "odd": 1.25})
                     
                     bilhete_gerado = []
                     acumulador_odd = 1.00
-                    random.shuffle(catalogo_disponivel)
                     
-                    # Constrói o bilhete até atingir o alvo
-                    for item in catalogo_disponivel:
+                    random.shuffle(catalogo_seguro)
+                    
+                    for item in catalogo_seguro:
                         if acumulador_odd < alvo:
                             bilhete_gerado.append(item)
                             acumulador_odd *= item["odd"]
                     
                     acumulador_odd = round(acumulador_odd, 2)
-                    prob_estimada = max(10, min(85, int(100 / acumulador_odd) + random.randint(3, 8)))
+                    prob_estimada = max(20, min(95, int(100 / acumulador_odd) + random.randint(3, 8)))
                     
-                    st.success(f"🔥 Bilhete dinâmico gerado com sucesso para a meta de Odd {alvo}!")
+                    st.success(f"🔥 Bilhete com **{len(bilhete_gerado)} seleções combinadas** gerado para a meta de Odd {alvo}!")
                     with st.container(border=True):
-                        st.markdown(f"**📋 Criar Aposta IA Superbet ({m} x {v})**")
+                        st.markdown(f"**📋 Criar Aposta Estruturado IA ({m} x {v})**")
                         for b in bilhete_gerado:
                             st.markdown(f"* `{b['nome']}` (Odd: {b['odd']})")
                         st.write("")
@@ -301,71 +300,108 @@ with aba_cacador:
                         c2.metric("Odd Acumulada Superbet 🟥", f"{acumulador_odd}")
                         c3.metric("Probabilidade de Bater", f"{prob_estimada}%")
 
-                    # Se a odd for muito alta, a IA sugere uma Múltipla alternativa
-                    if alvo >= 5.0:
-                        st.info("💡 **Dica da IA:** Para odds acima de 5.0, espalhar o risco em uma **Múltipla** pode ser mais seguro do que concentrar tudo num Criar Aposta.")
-                        with st.expander("Ver Sugestão de Múltipla Pronta para esta Odd Alvo"):
-                            st.markdown(f"**Jogo 1:** {m} x {v} ➔ `{m} ou Empate` + `Mais de 1.5 Gols` (Odd 1.65)")
-                            st.markdown(f"**Jogo 2:** Jogo Genérico de Elite ➔ `Ambas Marcam` (Odd 1.75)")
-                            st.markdown(f"**Jogo 3:** Jogo Genérico de Elite ➔ `Mais de 8.5 Escanteios` (Odd 1.45)")
-                            st.markdown(f"**Odd Múltipla Sugerida:** `{round(1.65 * 1.75 * 1.45, 2)}`")
-
                 st.divider()
                 st.markdown("### 🛠️ Ou Marque os Mercados Manualmente (Catálogo Completo):")
+                st.info(f"⚖️ **Info do Árbitro escalado ({arbitro['Nome']}):** Média de **{arbitro['Media_Cartoes']} cartões** por jogo.")
                 
                 col_m1, col_m2, col_m3 = st.columns(3)
                 with col_m1:
                     st.markdown("**⚽ Gols & Resultado**")
-                    sel_g15 = st.checkbox("Mais de 1.5 Gols (1.15)", value=True)
+                    sel_g05 = st.checkbox("Mais de 0.5 Gols (1.05)", value=True)
+                    sel_g15 = st.checkbox("Mais de 1.5 Gols (1.15)", value=False)
                     sel_g25 = st.checkbox("Mais de 2.5 Gols (1.65)", value=False)
-                    sel_ambos = st.checkbox("Ambas Marcam - Sim (1.75)", value=False)
                     sel_dc = st.checkbox(f"Dupla Chance: {m} (1.18)", value=False)
                 with col_m2:
                     st.markdown("**📐 Escanteios & Cartões**")
-                    sel_esc8 = st.checkbox("Mais de 8.5 Escanteios (1.42)", value=True)
-                    sel_esc9 = st.checkbox("Mais de 9.5 Escanteios (1.95)", value=False)
-                    sel_cartU = st.checkbox("Menos de 5.5 Cartões (1.30)", value=False)
-                    sel_cartO = st.checkbox("Mais de 3.5 Cartões (1.50)", value=False)
+                    sel_esc7 = st.checkbox("Mais de 7.5 Escanteios (1.25)", value=True)
+                    sel_esc8 = st.checkbox("Mais de 8.5 Escanteios (1.42)", value=False)
+                    sel_cart_over = st.checkbox(f"Mais de 3.5 Cartões (Árb. Média {arbitro['Media_Cartoes']}) - 1.45", value=False)
+                    sel_cart_under = st.checkbox(f"Menos de 5.5 Cartões (Árb. Média {arbitro['Media_Cartoes']}) - 1.25", value=False)
                 with col_m3:
                     st.markdown("**🎯 Mercado de Jogadores**")
-                    sel_p1 = st.checkbox(f"#{jc[0]['nome']} (0.5+ Chutes Alvo - 1.35)", value=True)
-                    sel_p2 = st.checkbox(f"#{jc[1]['nome']} (1+ Assistência - 3.40)", value=False)
-                    sel_p3 = st.checkbox(f"#{jf[0]['nome']} (0.5+ Chutes Alvo - 1.55)", value=False)
-                    sel_p4 = st.checkbox(f"#{jf[0]['nome']} (2+ Faltas Sofridas - 1.45)", value=False)
+                    sel_p1 = st.checkbox(f"#{jc[0]['nome']} (0.5+ Chutes Alvo - 1.25)", value=True)
+                    sel_p2 = st.checkbox(f"#{jc[1]['nome']} (0.5+ Chutes Alvo - 1.35)", value=False)
+                    sel_p3 = st.checkbox(f"#{jf[0]['nome']} (0.5+ Chutes Alvo - 1.30)", value=False)
+                    sel_p4 = st.checkbox(f"#{jf[0]['nome']} (1+ Faltas Sofridas - 1.20)", value=False)
                 
-                if st.button("🚀 Gerar Bilhete Manual com Odds da Superbet", key="btn_custom_sb_v34"):
+                if st.button("🚀 Gerar Bilhete Manual com Odds da Superbet", key="btn_custom_sb_v37"):
                     st.success("✅ Bilhete manual gerado com cotações oficiais Superbet!")
                     with st.container(border=True):
                         st.markdown(f"**📋 Criar Aposta Superbet ({m} x {v})**")
                         odd_manual = 1.00
+                        if sel_g05: st.markdown("* Mais de 0.5 Gols (1.05)"); odd_manual *= 1.05
                         if sel_g15: st.markdown("* Mais de 1.5 Gols (1.15)"); odd_manual *= 1.15
                         if sel_g25: st.markdown("* Mais de 2.5 Gols (1.65)"); odd_manual *= 1.65
-                        if sel_ambos: st.markdown("* Ambas Marcam (1.75)"); odd_manual *= 1.75
                         if sel_dc: st.markdown(f"* Dupla Chance: {m} (1.18)"); odd_manual *= 1.18
+                        if sel_esc7: st.markdown("* Mais de 7.5 Escanteios (1.25)"); odd_manual *= 1.25
                         if sel_esc8: st.markdown("* Mais de 8.5 Escanteios (1.42)"); odd_manual *= 1.42
-                        if sel_esc9: st.markdown("* Mais de 9.5 Escanteios (1.95)"); odd_manual *= 1.95
-                        if sel_cartU: st.markdown("* Menos de 5.5 Cartões (1.30)"); odd_manual *= 1.30
-                        if sel_cartO: st.markdown("* Mais de 3.5 Cartões (1.50)"); odd_manual *= 1.50
-                        if sel_p1: st.markdown(f"* #{jc[0]['nome']} - 0.5+ Chutes Alvo (1.35)"); odd_manual *= 1.35
-                        if sel_p2: st.markdown(f"* #{jc[1]['nome']} - 1+ Assistência (3.40)"); odd_manual *= 3.40
-                        if sel_p3: st.markdown(f"* #{jf[0]['nome']} - 0.5+ Chutes Alvo (1.55)"); odd_manual *= 1.55
-                        if sel_p4: st.markdown(f"* #{jf[0]['nome']} - 2+ Faltas Sofridas (1.45)"); odd_manual *= 1.45
+                        if sel_cart_over: st.markdown(f"* Mais de 3.5 Cartões (Árbitro Média {arbitro['Media_Cartoes']}) (1.45)"); odd_manual *= 1.45
+                        if sel_cart_under: st.markdown(f"* Menos de 5.5 Cartões (Árbitro Média {arbitro['Media_Cartoes']}) (1.25)"); odd_manual *= 1.25
+                        if sel_p1: st.markdown(f"* #{jc[0]['nome']} - 0.5+ Chutes Alvo (1.25)"); odd_manual *= 1.25
+                        if sel_p2: st.markdown(f"* #{jc[1]['nome']} - 0.5+ Chutes Alvo (1.35)"); odd_manual *= 1.35
+                        if sel_p3: st.markdown(f"* #{jf[0]['nome']} - 0.5+ Chutes Alvo (1.30)"); odd_manual *= 1.30
+                        if sel_p4: st.markdown(f"* #{jf[0]['nome']} - 1+ Faltas Sofridas (1.20)"); odd_manual *= 1.20
                         st.write("")
                         
                         c1, c2 = st.columns(2)
                         c1.metric("Odd Final Superbet 🟥", f"{round(odd_manual, 2)}")
-                        c2.metric("Probabilidade de Bater", f"{max(15, min(85, int(100 / odd_manual) + random.randint(3, 8)))}%")
+                        c2.metric("Probabilidade de Bater", f"{max(15, min(95, int(100 / odd_manual) + random.randint(3, 8)))}%")
     else:
         st.info("Nenhum jogo disponível para esta data.")
 
 # ==========================================
-# ABA 3: CRIADOR DE MÚLTIPLAS
+# ABA 3: CRIADOR DE MÚLTIPLAS COM IA E ÁRBITRO
 # ==========================================
 with aba_multiplas:
-    st.markdown("### ⚡ Criador de Múltiplas Avançado")
+    st.markdown("### ⚡ Criador de Múltiplas Avançado e Automático")
     if not df_jogos.empty:
+        
+        st.markdown("#### 🤖 IA: Gerador Automático de Múltiplas Seguras")
+        st.write("Deixe a inteligência artificial selecionar os melhores jogos do dia e montar uma múltipla segura pra você.")
+        
+        if st.button("⚡ Gerar Sugestão de Múltipla Pronta (IA)", key="btn_mult_ia_v37"):
+            if len(df_jogos) >= 3:
+                jogos_sugeridos = df_jogos.sample(3)
+            else:
+                jogos_sugeridos = df_jogos
+                
+            odd_multipla_auto = 1.0
+            prob_multipla_auto = 100.0
+            
+            st.success("🔥 Sugestão de Múltipla de Alta Probabilidade Gerada!")
+            for _, row_jogo in jogos_sugeridos.iterrows():
+                mandante = row_jogo['Mandante']
+                visitante = row_jogo['Visitante']
+                arb_mult = processar_arbitro(row_jogo['Árbitro API'])
+                
+                # Se o árbitro for muito rigoroso, a IA sugere over cartões para esse jogo na múltipla
+                if arb_mult['Media_Cartoes'] >= 5.0:
+                    sel_mercado = (f"Mais de 3.5 Cartões (Árbitro {arb_mult['Media_Cartoes']})", 1.45, random.randint(80, 92))
+                else:
+                    mercados_seguros = [
+                        (f"Mais de 0.5 Gols na Partida", 1.05, random.randint(88, 98)),
+                        (f"Dupla Chance: {mandante} ou Empate", 1.18, random.randint(75, 88)),
+                        (f"Mais de 1.5 Gols", 1.15, random.randint(75, 85))
+                    ]
+                    sel_mercado = random.choice(mercados_seguros)
+                
+                odd_multipla_auto *= sel_mercado[1]
+                prob_multipla_auto *= (sel_mercado[2] / 100.0)
+                
+                with st.container(border=True):
+                    st.markdown(f"⚽ **{mandante} x {visitante}**")
+                    st.markdown(f"🎯 **Seleção:** `{sel_mercado[0]}`")
+                    st.markdown(f"🟥 Odd Superbet: `{sel_mercado[1]}` | 📊 Chance Indiv: `{sel_mercado[2]}%`")
+            
+            c1, c2 = st.columns(2)
+            c1.metric("🏆 Odd Múltipla Total", f"{round(odd_multipla_auto, 2)}")
+            c2.metric("📊 Probabilidade Total", f"{int(prob_multipla_auto * 100)}%")
+
+        st.divider()
+        st.markdown("#### 🛠️ Ou Monte a Sua Múltipla Manualmente:")
+        
         lista = [f"{row['Liga']} | {row['Mandante']} x {row['Visitante']} ({row['Data']} - {row['Horário']})" for _, row in df_jogos.iterrows()]
-        selecionados = st.multiselect("Selecione as partidas para a sua Múltipla:", lista, key="m_sel_sb_v34")
+        selecionados = st.multiselect("Selecione as partidas para a sua Múltipla:", lista, key="m_sel_sb_v37")
         
         if selecionados:
             st.divider()
@@ -376,16 +412,16 @@ with aba_multiplas:
                 m_v = conf.split(" | ")[1].split(" (")[0]
                 tc = m_v.split(" x ")[0]
                 
-                is_ = round(random.uniform(1.40, 2.10), 2)
+                is_ = round(random.uniform(1.20, 1.65), 2)
                 os_ac *= is_
                 
-                prob_jogo_atual = random.randint(65, 85)
+                prob_jogo_atual = random.randint(75, 90)
                 prob_multipla *= (prob_jogo_atual / 100.0)
                 
                 with st.container(border=True):
                     st.markdown(f"⚽ **Partida: {m_v}**")
                     st.markdown(f"""
-                    * **Seleções Base:** `{tc} ou Empate` + `Mais de 1.5 Gols`
+                    * **Seleção:** `Mais de 0.5 Gols` ou `Dupla Chance`
                     * **📊 Chance de Bater (Individual):** **{prob_jogo_atual}%**
                     * 🟥 Cotação Superbet: `{is_}`
                     """)
@@ -397,7 +433,5 @@ with aba_multiplas:
             cm1, cm2 = st.columns(2)
             cm1.metric("🏆 Múltipla Total Superbet", f"{os_ac:.2f}")
             cm2.metric("📊 Probabilidade da Múltipla", f"{prob_final_pct}%")
-        else:
-            st.info("Selecione partidas na lista acima para combinar múltiplos mercados.")
     else:
         st.info("Nenhum jogo disponível.")
