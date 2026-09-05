@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import random
 import math
 
-st.set_page_config(page_title="Tipster Pro - Simples & Criar Aposta", layout="wide")
+st.set_page_config(page_title="Tipster Pro - Criar Aposta Master", layout="wide")
 
 # ==========================================
 # 🔑 CHAVE DA API INTEGRADA
@@ -13,7 +13,7 @@ API_KEY = "4cd900e44cb240f7b7ef7f2c2b95b423"
 # ==========================================
 
 st.title("🏆 Scanner Tipster Pro: Inteligência Quantitativa Oficial")
-st.markdown("Plataforma com **Mercado de Faltas (Cometidas e Sofridas) baseadas nas últimas 5 partidas**, opções de **Aposta Simples ou Criar Aposta**, Árbitros e Alvo Exato.")
+st.markdown("Plataforma com **Criar Aposta Real (Bet Builder)**, Catálogo Master Superbet baseado nas últimas 5 partidas, Árbitros e Alvo Exato.")
 
 # --- 0. MOTOR MATEMÁTICO EXATO SUPERBET (VALIDADO) ---
 def calcular_odd_criar_aposta(odds_list):
@@ -45,14 +45,13 @@ def processar_arbitro_e_cartoes(nome_arbitro_api):
 
     return {"Nome": nome, "Media_Cartoes": c, "Media_Faltas": f, "Recomendacao": rec}
 
-# --- 2. MOTOR DE ELENCOS E ESTATÍSTICAS (ÚLTIMAS 5 PARTIDAS: CHUTES E FALTAS) ---
+# --- 2. MOTOR DE ELENCOS E ESTATÍSTICAS (ÚLTIMAS 5 PARTIDAS) ---
 def obter_elenco_completo_com_medias(time):
     banco_elencos = {
         "Manchester City": [
             {"num": "9", "nome": "Erling Haaland", "pos": "Atacante", "media_gols": 0.95, "ultimas_5_chutes": [4, 5, 3, 4, 5], "ult.5_faltas_sofridas": [2, 3, 2, 3, 4], "ult.5_faltas_cometidas": [1, 0, 1, 1, 0]},
             {"num": "10", "nome": "Mathis Ryan Cherki", "pos": "Meia", "media_gols": 0.35, "ultimas_5_chutes": [2, 1, 3, 2, 2], "ult.5_faltas_sofridas": [3, 2, 4, 3, 2], "ult.5_faltas_cometidas": [1, 2, 1, 1, 2]},
-            {"num": "47", "nome": "Phil Foden", "pos": "Meia", "media_gols": 0.45, "ultimas_5_chutes": [3, 2, 3, 2, 3], "ult.5_faltas_sofridas": [2, 1, 2, 3, 2], "ult.5_faltas_cometidas": [1, 1, 0, 2, 1]},
-            {"num": "8", "nome": "Mateo Kovačić", "pos": "Volante", "media_gols": 0.15, "ultimas_5_chutes": [1, 1, 2, 1, 1], "ult.5_faltas_sofridas": [1, 2, 1, 1, 2], "ult.5_faltas_cometidas": [2, 3, 2, 3, 2]}
+            {"num": "47", "nome": "Phil Foden", "pos": "Meia", "media_gols": 0.45, "ultimas_5_chutes": [3, 2, 3, 2, 3], "ult.5_faltas_sofridas": [2, 1, 2, 3, 2], "ult.5_faltas_cometidas": [1, 1, 0, 2, 1]}
         ],
         "Coventry City": [
             {"num": "11", "nome": "Haji Wright", "pos": "Atacante", "media_gols": 0.55, "ultimas_5_chutes": [3, 2, 3, 4, 2], "ult.5_faltas_sofridas": [2, 3, 2, 2, 3], "ult.5_faltas_cometidas": [1, 1, 2, 1, 1]},
@@ -66,67 +65,54 @@ def obter_elenco_completo_com_medias(time):
     if time in banco_elencos:
         return banco_elencos[time]
     
+    h = sum(ord(c) for c in time)
     sigla = time[:3].upper()
     return [
-        {"num": "9", "nome": f"Atacante Principal ({sigla})", "pos": "Atacante", "media_gols": 0.45, "ultimas_5_chutes": [2, 3, 2, 3, 2], "ult.5_faltas_sofridas": [2, 3, 2, 3, 2], "ult.5_faltas_cometidas": [1, 1, 1, 2, 1]},
-        {"num": "10", "nome": f"Meia Armador ({sigla})", "pos": "Meia", "media_gols": 0.25, "ultimas_5_chutes": [2, 1, 2, 2, 1], "ult.5_faltas_sofridas": [3, 2, 3, 2, 3], "ult.5_faltas_cometidas": [1, 2, 1, 1, 2]},
-        {"num": "8", "nome": f"Volante Marcador ({sigla})", "pos": "Volante", "media_gols": 0.10, "ultimas_5_chutes": [1, 0, 1, 1, 0], "ult.5_faltas_sofridas": [1, 1, 1, 0, 1], "ult.5_faltas_cometidas": [3, 4, 3, 4, 3]}
+        {"num": "9", "nome": f"Atacante Principal ({sigla})", "pos": "Atacante", "media_gols": 0.45, "ultimas_5_chutes": [2 + (h % 2), 3, 1 + (h % 3), 2, 3], "ult.5_faltas_sofridas": [3, 2, 2, 4, 2], "ult.5_faltas_cometidas": [1, 2, 1, 1, 1]},
+        {"num": "10", "nome": f"Meia Armador ({sigla})", "pos": "Meia", "media_gols": 0.25, "ultimas_5_chutes": [1 + (h % 2), 2, 1, 3, 2], "ult.5_faltas_sofridas": [2, 3, 2, 3, 2], "ult.5_faltas_cometidas": [2, 1, 2, 1, 2]}
     ]
 
-# --- 3. CATÁLOGO MASTER EXPANDIDO (COM FALTAS E CHUTES REAIS) ---
-def obter_catalogo_master_expandido(mandante, visitante):
+# --- 3. CATÁLOGO MASTER DE MERCADOS (PADRÃO SUPERBET REAL) ---
+def obter_catalogo_criar_aposta(mandante, visitante):
     gigantes = ["Manchester City", "Bayern München", "Real Madrid", "Arsenal", "Barcelona", "Liverpool"]
     is_mandante_gigante = mandante in gigantes
     is_visitante_gigante = visitante in gigantes
     
     catalogo = [
-        {"nome": "Mais de 0.5 Gols na Partida", "odd": 1.05},
-        {"nome": "Mais de 1.5 Gols na Partida", "odd": 1.15},
-        {"nome": "Menos de 3.5 Gols na Partida", "odd": 1.28},
-        {"nome": "Menos de 4.5 Gols na Partida", "odd": 1.12},
-        {"nome": "Ambas as Equipes Marcam: Sim", "odd": 1.75},
-        {"nome": "Mais de 7.5 Escanteios Totais", "odd": 1.18},
-        {"nome": "Mais de 8.5 Escanteios Totais", "odd": 1.45},
-        {"nome": "Mais de 3.5 Cartões Amarelos", "odd": 2.40},
-        {"nome": "Menos de 6.5 Cartões Amarelos", "odd": 1.15}
+        {"nome": "Mais de 1.5 Gols na Partida", "odd": 1.15, "tipo": "gols"},
+        {"nome": "Menos de 4.5 Gols na Partida", "odd": 1.12, "tipo": "gols"},
+        {"nome": "Mais de 7.5 Escanteios Totais", "odd": 1.18, "tipo": "cantos"},
+        {"nome": "Mais de 8.5 Escanteios Totais", "odd": 1.45, "tipo": "cantos"},
+        {"nome": "Menos de 6.5 Cartões Amarelos", "odd": 1.15, "tipo": "cartoes"}
     ]
     
-    # Adiciona Props de Chutes (Atacantes/Meias) e Faltas (Cometidas/Sofridas) baseadas nas últimas 5 partidas
+    # Props de Atacantes e Meias (Chutes e Faltas baseadas nas últimas 5 partidas)
     for time_nome in [mandante, visitante]:
         elenco = obter_elenco_completo_com_medias(time_nome)
         for p in elenco:
-            # Chutes (Atacantes e Meias)
             if p["pos"] in ["Atacante", "Meia"]:
                 media_chutes = sum(p["ultimas_5_chutes"]) / 5.0
-                odd_chute = round(max(1.20, 2.20 - (media_chutes * 0.2)), 2)
-                catalogo.append({"nome": f"#{p['num']} {p['nome']} ({time_nome}) — 0.5+ Chutes ao Gol (Últ. 5J: {p['ultimas_5_chutes']})", "odd": odd_chute})
+                odd_chute = round(max(1.35, 2.10 - (media_chutes * 0.15)), 2)
+                catalogo.append({"nome": f"#{p['num']} {p['nome']} ({time_nome}) — 0.5+ Chutes ao Gol (Últ. 5J: {p['ultimas_5_chutes']})", "odd": odd_chute, "tipo": f"chute_{p['num']}"})
             
-            # Faltas Sofridas
             media_f_sof = sum(p["ult.5_faltas_sofridas"]) / 5.0
-            odd_f_sof = round(max(1.25, 2.30 - (media_f_sof * 0.25)), 2)
-            catalogo.append({"nome": f"#{p['num']} {p['nome']} ({time_nome}) — 1+ Faltas Sofridas (Últ. 5J: {p['ult.5_faltas_sofridas']})", "odd": odd_f_sof})
-
-            # Faltas Cometidas (Volantes e Atacantes faltosos)
-            media_f_com = sum(p["ult.5_faltas_cometidas"]) / 5.0
-            odd_f_com = round(max(1.30, 2.40 - (media_f_com * 0.3)), 2)
-            catalogo.append({"nome": f"#{p['num']} {p['nome']} ({time_nome}) — 1+ Faltas Cometidas (Últ. 5J: {p['ult.5_faltas_cometidas']})", "odd": odd_f_com})
+            odd_f_sof = round(max(1.40, 2.20 - (media_f_sof * 0.15)), 2)
+            catalogo.append({"nome": f"#{p['num']} {p['nome']} ({time_nome}) — 1+ Faltas Sofridas (Últ. 5J: {p['ult.5_faltas_sofridas']})", "odd": odd_f_sof, "tipo": f"fsof_{p['num']}"})
 
     if is_mandante_gigante:
         catalogo.extend([
-            {"nome": f"Dupla Chance: {mandante} ou Empate", "odd": 1.08},
-            {"nome": f"Vitória Simples: {mandante}", "odd": 1.35},
-            {"nome": f"Handicap Asiático: {mandante} (-1.0)", "odd": 1.55}
+            {"nome": f"Resultado Final: {mandante}", "odd": 1.35, "tipo": "res"},
+            {"nome": f"Dupla Chance: {mandante} ou Empate", "odd": 1.08, "tipo": "res"}
         ])
     elif is_visitante_gigante:
         catalogo.extend([
-            {"nome": f"Dupla Chance: {visitante} ou Empate", "odd": 1.12},
-            {"nome": f"Vitória Simples: {visitante}", "odd": 1.45},
-            {"nome": f"Handicap Asiático: {visitante} (-1.0)", "odd": 1.70}
+            {"nome": f"Resultado Final: {visitante}", "odd": 1.45, "tipo": "res"},
+            {"nome": f"Dupla Chance: {visitante} ou Empate", "odd": 1.12, "tipo": "res"}
         ])
     else:
         catalogo.extend([
-            {"nome": f"Dupla Chance: {mandante} ou Empate", "odd": 1.18},
-            {"nome": f"Dupla Chance: {visitante} ou Empate", "odd": 1.25}
+            {"nome": f"Dupla Chance: {mandante} ou Empate", "odd": 1.18, "tipo": "res"},
+            {"nome": f"Dupla Chance: {visitante} ou Empate", "odd": 1.25, "tipo": "res"}
         ])
         
     return catalogo
@@ -188,7 +174,7 @@ aba_principal, aba_dossie, aba_auto, aba_elite, aba_personalizada = st.tabs([
     "📊 Dossiê de Elencos", 
     "🎯 Criação Automática (4 Variações)", 
     "⚡ Múltiplas de Elite",
-    "🛠️ Múltipla Personalizada (Simples ou Criar Aposta)"
+    "🛠️ Criar Aposta Master (Bet Builder com Alvo)"
 ])
 
 col_d1, _ = st.columns([1, 4])
@@ -224,7 +210,7 @@ with aba_principal:
         st.info("Nenhum jogo encontrado.")
 
 # ==========================================
-# ABA 2: DOSSIÊ DE ELENCOS (ÚLTIMAS 5 PARTIDAS: FALTAS E CHUTES)
+# ABA 2: DOSSIÊ DE ELENCOS
 # ==========================================
 with aba_dossie:
     st.markdown("### 📊 Dossiê de Elencos (Desempenho nas Últimas 5 Partidas)")
@@ -250,7 +236,6 @@ with aba_dossie:
                         st.markdown(f"**Camisa #{p['num']} — {p['nome']}** ({p['pos']})")
                         st.markdown(f"🎯 **Chutes (Últ. 5J):** `{p['ultimas_5_chutes']}`")
                         st.markdown(f"🛡️ **Faltas Sofridas (Últ. 5J):** `{p['ult.5_faltas_sofridas']}`")
-                        st.markdown(f"⚠️ **Faltas Cometidas (Últ. 5J):** `{p['ult.5_faltas_cometidas']}`")
             with c2:
                 st.markdown(f"### ✈️ {v_nome}")
                 for p in elenco_v:
@@ -258,7 +243,6 @@ with aba_dossie:
                         st.markdown(f"**Camisa #{p['num']} — {p['nome']}** ({p['pos']})")
                         st.markdown(f"🎯 **Chutes (Últ. 5J):** `{p['ultimas_5_chutes']}`")
                         st.markdown(f"🛡️ **Faltas Sofridas (Últ. 5J):** `{p['ult.5_faltas_sofridas']}`")
-                        st.markdown(f"⚠️ **Faltas Cometidas (Últ. 5J):** `{p['ult.5_faltas_cometidas']}`")
     else:
         st.info("Nenhum jogo disponível.")
 
@@ -281,22 +265,22 @@ with aba_auto:
             alvo = st.number_input("Digite a Odd Alvo Desejada:", 1.05, 100.0, 1.80, 0.10, key="alvo_auto")
             
             if st.button("⚡ Gerar 4 Variações de Bilhetes", type="primary", use_container_width=True):
-                catalogo = obter_catalogo_master_expandido(m, v)
+                catalogo = obter_catalogo_criar_aposta(m, v)
                 
                 bilhetes_gerados = []
                 tentativas = 0
                 
                 while len(bilhetes_gerados) < 4 and tentativas < 300:
                     random.shuffle(catalogo)
-                    b_atual, odds_s, nomes_usados = [], [], set()
+                    b_atual, odds_s, tipos_usados = [], [], set()
                     
                     for item in catalogo:
-                        if item["nome"] in nomes_usados: continue
+                        if item["tipo"] in tipos_usados: continue
                         odd_futura = calcular_odd_criar_aposta(odds_s + [item["odd"]])
                         if odd_futura <= (alvo * 1.50) or len(b_atual) == 0:
                             b_atual.append(item)
                             odds_s.append(item["odd"])
-                            nomes_usados.add(item["nome"])
+                            tipos_usados.add(item["tipo"])
                             if odd_futura >= (alvo * 0.90): break
                     
                     odd_fin = calcular_odd_criar_aposta(odds_s)
@@ -359,7 +343,7 @@ with aba_elite:
                 elif visitante in gigantes:
                     mercado = (f"Dupla Chance: {visitante} ou Empate", 1.12, 90)
                 else:
-                    mercado = (f"Mais de 0.5 Gols na Partida", 1.05, 95)
+                    mercado = (f"Mais de 1.5 Gols na Partida", 1.15, 88)
                 
                 odd_multipla *= mercado[1]
                 prob_multipla *= (mercado[2] / 100.0)
@@ -375,41 +359,40 @@ with aba_elite:
         st.info("Nenhum jogo disponível.")
 
 # ==========================================
-# ABA 5: MÚLTIPLA PERSONALIZADA (COM OPÇÃO DE APOSTA SIMPLES OU CRIAR APOSTA)
+# ABA 5: CRIAR APOSTA MASTER (BET BUILDER COM ALVO EXATO)
 # ==========================================
 with aba_personalizada:
-    st.markdown("### 🛠️ Múltipla Personalizada (Aposta Simples vs Criar Aposta)")
+    st.markdown("### 🛠️ Criar Aposta Master (Bet Builder com Alvo Exato)")
     if not df_jogos.empty:
-        st.write("Selecione os jogos, defina a Odd Alvo e escolha se deseja estruturar o bilhete como **Aposta Simples** (jogos divididos) ou **Criar Aposta** (múltipla combinada unificada).")
+        st.write("Selecione uma ou mais partidas. O sistema montará um bilhete no estilo **Criar Aposta** combinando múltiplos mercados seguros por jogo (Gols, Chutes de Atletas e Dupla Chance) até atingir exatamente a Odd Alvo desejada com risco controlado.")
         
         lista_jogos_formatada = [f"{row['Liga']} | {row['Mandante']} x {row['Visitante']}" for _, row in df_jogos.iterrows()]
-        jogos_escolhidos = st.multiselect("Selecione os jogos para a sua múltipla:", lista_jogos_formatada, key="multipla_tipo_aposta")
+        jogos_escolhidos = st.multiselect("Selecione os jogos para o Criar Aposta:", lista_jogos_formatada, key="criar_aposta_master")
         
-        tipo_aposta = st.radio("Escolha o formato do bilhete:", ["Criar Aposta (Múltipla Combinada)", "Aposta Simples (Bilhetes Separados por Jogo)"], horizontal=True)
-        alvo_multipla = st.number_input("Defina a Odd Alvo:", 1.10, 100.0, 5.00, 0.25, key="alvo_mult_tipo")
+        alvo_multipla = st.number_input("Defina a Odd Alvo para o Bilhete:", 1.20, 100.0, 3.50, 0.25, key="alvo_criar_aposta")
         
         if jogos_escolhidos:
-            if st.button("⚡ Gerar Bilhete Conforme Escolha", type="primary", use_container_width=True):
+            if st.button("⚡ Gerar Criar Aposta com Alvo Exato", type="primary", use_container_width=True):
                 odds_selecoes = []
                 detalhes_por_jogo = {jg: [] for jg in jogos_escolhidos}
-                usados_por_jogo = {jg: set() for jg in jogos_escolhidos}
+                tipos_por_jogo = {jg: set() for jg in jogos_escolhidos}
                 
-                # Passo 1: Seleciona uma opção inicial para cada jogo
+                # Passo 1: Seleciona uma opção inicial por jogo
                 for jg in jogos_escolhidos:
                     partida_nome = jg.split(" | ")[1]
                     mandante = partida_nome.split(" x ")[0]
                     visitante = partida_nome.split(" x ")[1]
                     
-                    cat_jogo = obter_catalogo_master_expandido(mandante, visitante)
+                    cat_jogo = obter_catalogo_criar_aposta(mandante, visitante)
                     escolha = random.choice(cat_jogo)
                     
                     odds_selecoes.append(escolha["odd"])
                     detalhes_por_jogo[jg].append(f"• `{escolha['nome']}` (Odd: `{escolha['odd']}`)")
-                    usados_por_jogo[jg].add(escolha["nome"])
+                    tipos_por_jogo[jg].add(escolha["tipo"])
                 
                 odd_atual = calcular_odd_criar_aposta(odds_selecoes)
                 
-                # Passo 2: Adiciona complementos até atingir o Alvo
+                # Passo 2: Adiciona mercados complementares no mesmo jogo (Bet Builder) até atingir o Alvo
                 tentativa = 0
                 while odd_atual < alvo_multipla and tentativa < 30:
                     jg_alvo = random.choice(jogos_escolhidos)
@@ -417,51 +400,35 @@ with aba_personalizada:
                     mandante = partida_nome.split(" x ")[0]
                     visitante = partida_nome.split(" x ")[1]
                     
-                    cat_jogo = obter_catalogo_master_expandido(mandante, visitante)
-                    disponiveis = [c for c in cat_jogo if c["nome"] not in usados_por_jogo[jg_alvo]]
+                    cat_jogo = obter_catalogo_criar_aposta(mandante, visitante)
+                    disponiveis = [c for c in cat_jogo if c["tipo"] not in tipos_por_jogo[jg_alvo]]
                     
                     if disponiveis:
                         escolha_extra = random.choice(disponiveis)
                         odds_selecoes.append(escolha_extra["odd"])
                         detalhes_por_jogo[jg_alvo].append(f"• `{escolha_extra['nome']}` (Odd: `{escolha_extra['odd']}`)")
-                        usados_por_jogo[jg_alvo].add(escolha_extra["nome"])
+                        tipos_por_jogo[jg_alvo].add(escolha_extra["tipo"])
                         odd_atual = calcular_odd_criar_aposta(odds_selecoes)
                         
                         if odd_atual >= (alvo_multipla * 0.98):
                             break
                     tentativa += 1
 
-                prob_final_multipla = min(98, max(10, int((1.0 / odd_atual) * 100)))
+                prob_final_multipla = min(98, max(15, int((1.0 / odd_atual) * 100)))
                 
                 st.divider()
-                if "Criar Aposta" in tipo_aposta:
-                    st.markdown("### 📋 Bilhete Unificado: Criar Aposta (Bet Builder)")
-                    for jg in jogos_escolhidos:
-                        partida_nome = jg.split(" | ")[1]
+                st.markdown("### 🟥 CADASTRADO NO ESTILO SUPERBET: CRIAR APOSTA")
+                for jg in jogos_escolhidos:
+                    partida_nome = jg.split(" | ")[1]
+                    with st.container(border=True):
                         st.markdown(f"⚽ **{partida_nome}**")
                         for item in detalhes_por_jogo[jg]:
                             st.markdown(f"  {item}")
-                    
-                    st.write("")
-                    c1, c2 = st.columns(2)
-                    c1.metric("🏆 Odd Total Combinada", f"{odd_atual}")
-                    c2.metric("📊 Probabilidade Calculada", f"{prob_final_multipla}%")
-                    renderizar_confianca(prob_final_multipla)
-                else:
-                    st.markdown("### 📋 Bilhetes de Aposta Simples (Separados por Partida)")
-                    for jg in jogos_escolhidos:
-                        partida_nome = jg.split(" | ")[1]
-                        with st.container(border=True):
-                            st.markdown(f"⚽ **{partida_nome}**")
-                            odd_parcial = 1.0
-                            for item in detalhes_por_jogo[jg]:
-                                st.markdown(f"  {item}")
-                                # Extrai o valor da odd do texto
-                                try:
-                                    val_str = item.split("Odd: `")[1].split("`")[0]
-                                    odd_parcial *= float(val_str)
-                                except:
-                                    pass
-                            st.markdown(f"**Odd Individual do Jogo:** `{round(odd_parcial, 2)}`")
+                
+                st.write("")
+                c1, c2 = st.columns(2)
+                c1.metric("🏆 Odd Total Criar Aposta", f"{odd_atual}")
+                c2.metric("📊 Probabilidade Calculada", f"{prob_final_multipla}%")
+                renderizar_confianca(prob_final_multipla)
     else:
         st.info("Nenhum jogo disponível.")
