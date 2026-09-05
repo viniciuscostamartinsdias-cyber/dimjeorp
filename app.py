@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import random
 
 # Configuração da Página
-st.set_page_config(page_title="Tipster Pro - Padrão Superbet", layout="wide")
+st.set_page_config(page_title="Tipster Pro - Padrão Superbet Corrigido", layout="wide")
 
 # ==========================================
 # 🔑 COLE A SUA CHAVE DA API AQUI DENTRO DAS ASPAS
@@ -256,7 +256,6 @@ with aba_cacador:
                             base_odd = val
                     
                     odd_sb = round(base_odd + random.uniform(0.01, 0.04), 2)
-                    prob_calc = int(100 / odd_sb) + random.randint(3, 6)
                     
                     st.success("✅ Cotação calculada pelo padrão Superbet.")
                     c1, c2 = st.columns(2)
@@ -344,7 +343,6 @@ with aba_cacador:
 # ==========================================
 # ABA 3: CRIADOR DE MÚLTIPLAS
 # ==========================================
-aba_multiplas:
 with aba_multiplas:
     st.markdown("### ⚡ Criador de Múltiplas (Padrão Superbet)")
     if not df_jogos.empty:
